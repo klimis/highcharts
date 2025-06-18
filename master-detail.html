@@ -1,0 +1,355 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<figure class="highcharts-figure">
+  <select id="series-selector" >
+    <option value="none">Select additional series...</option>
+    <option value="italy">Italy</option>
+    <option value="portugal">Portugal</option>
+    <option value="denmark">Denmark</option>
+    <option value="eu27" selected>Eu27</option>
+  </select>
+  <button id="reset-zoom">Reset Zoom / Chart</button>
+  <div id="container"></div>
+  <p class="highcharts-description">
+    Select an area by dragging across the lower chart
+  </p>
+</figure>
+
+<style>
+  .highcharts-figure,
+  .highcharts-data-table table {
+    min-width: 310px;
+    max-width: 800px;
+    margin: 1em auto;
+  }
+
+  #container {
+    height: 400px;
+  }
+
+  #master-container {
+    position: absolute;
+    top: 300px;
+    height: 100px;
+    width: 100%;
+  }
+
+  .highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #ebebeb;
+    margin: 10px auto;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+  }
+
+  .highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+  }
+
+  .highcharts-data-table td,
+  .highcharts-data-table th,
+  .highcharts-data-table caption {
+    padding: 0.5em;
+  }
+
+  .highcharts-data-table thead tr,
+  .highcharts-data-table tbody tr:nth-child(even) {
+    background: #f8f8f8;
+  }
+
+  .highcharts-data-table tr:hover {
+    background: #f1f7ff;
+  }
+
+  .highcharts-description {
+    margin: 0.3rem 10px;
+  }
+</style>
+
+<script>
+  (async () => {
+    // Load the datasets for the main EU series
+    const data = await fetch(
+      "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=eu27"
+    ).then((response) => response.json());
+
+    let detailChart;
+    let masterChart;
+
+    // create the detail chart with only the EU series initially
+    function createDetail(masterChartRef) {
+      const detailData = [];
+      const detailStart = data[0][0];
+
+      masterChartRef.series[0].data.forEach((point) => {
+        if (point.x >= detailStart) {
+          detailData.push([point.x, point.y]);
+        }
+      });
+
+      detailChart = Highcharts.chart("detail-container", {
+        chart: {
+          marginBottom: 120,
+          reflow: false,
+          marginLeft: 50,
+          marginRight: 20,
+          style: { position: "absolute" },
+        },
+        credits: { enabled: false },
+        title: { text: "EU’s Greenhouse gas emissions", align: "left" },
+        subtitle: { text: "desc", align: "left" },
+        xAxis: { type: "datetime" },
+        yAxis: { title: { text: null }, maxZoom: 0.1 },
+        tooltip: {
+          shared: false,
+          headerFormat:
+            '<span style="font-size: 10px">{point.key:%Y}</span><br/>',
+          pointFormat:
+            '<span style="color:{series.color}">\u25CF</span> <b>{series.name}</b>: {point.y:.2f} emissions<br/>',
+        },
+        legend: { enabled: false },
+        plotOptions: {
+          series: {
+            marker: {
+              enabled: false,
+              states: { hover: { enabled: true, radius: 3 } },
+            },
+          },
+        },
+        series: [
+          { id: "eu", name: "EU27", data: detailData, color: "#945962" },
+        ],
+        exporting: { enabled: false },
+      });
+    }
+
+    // create the master chart with only the EU series initially
+    function createMaster() {
+      const maskFill = "rgba(0,0,255,0.05)";
+      masterChart = Highcharts.chart(
+        "master-container",
+        {
+          chart: {
+            reflow: false,
+            borderWidth: 0,
+            backgroundColor: null,
+            marginLeft: 50,
+            marginRight: 20,
+            zooming: { type: "x" },
+            events: {
+              selection: function (event) {
+                const extremesObject = event.xAxis[0],
+                  min = extremesObject.min,
+                  max = extremesObject.max,
+                  detailData = [],
+                  xAxis = this.xAxis[0];
+
+                // Update detail data for EU
+                this.series[0].data.forEach((point) => {
+                  if (point.x > min && point.x < max) {
+                    detailData.push([point.x, point.y]);
+                  }
+                });
+
+                // Update detail data for any additional series
+                if (this.series.length > 1) {
+                  for (let i = 1; i < this.series.length; i++) {
+                    this.series[i].data.forEach((point) => {
+                      if (point.x > min && point.x < max) {
+                        const tgtSeries = detailChart.series.find(
+                          (s) => s.options.id === this.series[i].options.id
+                        );
+                        if (tgtSeries) {
+                          const currentData = [];
+                          this.series[i].data.forEach((pt) => {
+                            if (pt.x > min && pt.x < max) {
+                              currentData.push([pt.x, pt.y]);
+                            }
+                          });
+                          tgtSeries.setData(currentData);
+                        }
+                      }
+                    });
+                  }
+                }
+
+                xAxis.removePlotBand("mask-before");
+                xAxis.addPlotBand({
+                  id: "mask-before",
+                  from: data[0][0],
+                  to: min,
+                  color: maskFill,
+                });
+                xAxis.removePlotBand("mask-after");
+                xAxis.addPlotBand({
+                  id: "mask-after",
+                  from: max,
+                  to: data[data.length - 1][0],
+                  color: maskFill,
+                });
+
+                detailChart.series[0].setData(detailData);
+                return false;
+              },
+            },
+          },
+          title: { text: null },
+          accessibility: { enabled: false },
+          xAxis: {
+            type: "datetime",
+            showLastTickLabel: true,
+            maxZoom: 14 * 24 * 3600000,
+            plotBands: [
+              {
+                id: "mask-before",
+                from: data[0][0],
+                to: data[data.length - 1][0],
+                color: maskFill,
+              },
+            ],
+            title: { text: null },
+          },
+          yAxis: {
+            gridLineWidth: 0,
+            labels: { enabled: false },
+            title: { text: null },
+            min: 0.6,
+            showFirstLabel: false,
+          },
+          legend: { enabled: false },
+          credits: { enabled: false },
+          plotOptions: {
+            series: {
+              fillColor: {
+                linearGradient: [0, 0, 0, 70],
+                stops: [
+                  [0, Highcharts.getOptions().colors[0]],
+                  [1, "rgba(255,255,255,0)"],
+                ],
+              },
+              lineWidth: 1,
+              marker: { enabled: false },
+              shadow: false,
+              states: { hover: { lineWidth: 1 } },
+              enableMouseTracking: false,
+            },
+          },
+          series: [
+            {
+              id: "eu",
+              type: "line",
+              name: "EU",
+              pointInterval: 24 * 3600 * 1000,
+              pointStart: data[0][0],
+              data: data.map((point) => [point[0], point[1]]),
+              color: "#945962",
+            },
+          ],
+          exporting: { enabled: false },
+        },
+        (chart) => {
+          createDetail(chart);
+        }
+      );
+    }
+
+    // Make the container smaller and add a second container for the master chart
+    const container = document.getElementById("container");
+    container.style.position = "relative";
+    container.innerHTML +=
+      '<div id="detail-container"></div><div id="master-container"></div>';
+
+    // Create the master chart; its callback creates the detail chart
+    createMaster();
+
+    // Define mappings for API URLs and colors for each country
+    const urlMapping = {
+      italy:
+        "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=it",
+      portugal:
+        "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=pt",
+      denmark:
+        "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=dk",
+      eu27: "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=eu27",
+    };
+
+    const colorMapping = {
+      italy: "#4C7C9A",
+      portugal: "#008000",
+      denmark: "#FF0000",
+    };
+
+    // Listen for changes in the select menu to add the chosen country dynamically
+    document
+      .getElementById("series-selector")
+      .addEventListener("change", async (e) => {
+        const country = e.target.value;
+        if (country !== "none") {
+          if (!masterChart.series.find((s) => s.options.id === country)) {
+            try {
+              const fetchedData = await fetch(urlMapping[country]).then(
+                (response) => response.json()
+              );
+              const seriesName =
+                country.charAt(0).toUpperCase() + country.slice(1);
+              const seriesColor = colorMapping[country];
+
+              // Add series to master chart
+              masterChart.addSeries({
+                id: country,
+                type: "line",
+                name: seriesName,
+                pointInterval: 24 * 3600 * 1000,
+                pointStart: fetchedData[0][0],
+                data: fetchedData.map((point) => [point[0], point[1]]),
+                color: seriesColor,
+              });
+
+              // Add series to detail chart
+              detailChart.addSeries({
+                id: country,
+                name: seriesName,
+                data: fetchedData.map((point) => [point[0], point[1]]),
+                color: seriesColor,
+              });
+            } catch (error) {
+              console.error("Error fetching data for", country, error);
+            }
+          }
+        }
+      });
+
+    // Add event listener for the Reset Zoom button
+    document.getElementById("reset-zoom").addEventListener("click", () => {
+      const fullMin = data[0][0];
+      const fullMax = data[data.length - 1][0];
+
+      // Reset master chart's zoom to the full range
+      masterChart.xAxis[0].setExtremes(fullMin, fullMax);
+
+      // Update each detail chart series to reflect the full master data
+      masterChart.series.forEach((series) => {
+        const newData = series.data.map((point) => [point.x, point.y]);
+        const tgtSeries = detailChart.series.find(
+          (s) => s.options.id === series.options.id
+        );
+        if (tgtSeries) {
+          tgtSeries.setData(newData, false);
+        }
+      });
+      detailChart.redraw();
+    });
+  })();
+</script>

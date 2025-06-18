@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+       
+
+   </head>
+<body>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<figure class="highcharts-figure">
+    <div id="container"></div>
+    <p class="highcharts-description">
+        Chart showing how a second chart can be added to approach Highcharts Stock
+        Navigator functionality in Highcharts. Click and drag in the lower
+        chart to zoom in on the upper chart.
+    </p>
+</figure>
+
+
+
+
+<script type="application/javascript">
+async function getData() {
+  let url = 'https://profound-duckling-easily.ngrok-free.app/api/v1/en/charts/jsonstat?comp_id=48630&dt_tp_id=2';
+    const date = [],       
+        response = await fetch(url),
+        data = await response.json();        
+        console.log(data);
+
+    return data;
+}
+
+async function drawData() {
+    let data = await getData();
+   
+    Highcharts.chart('container', {
+
+        title: {
+            text: 'Global temperature change'
+        },
+
+        subtitle: {
+            text: 'Zonal annual means'
+        },
+
+        xAxis: {
+            categories: data.date
+        },
+
+        yAxis: {
+            labels: {
+                format: '{value}°'
+            }
+        },
+
+        plotOptions: {
+            series: {
+                marker: {
+                    enabled: false
+                }
+            }
+        },
+         credits: {
+          enabled: false
+    },
+        tooltip: {
+            shared: true,
+            useHTML: true,
+            headerFormat: '<small>{point.key}</small><table>',
+            pointFormat: '<tr><td style="color: {series.color}">{series.name}: </td>' +
+                '<td style="text-align: right"><b>{point.y}°</b></td></tr>',
+            footerFormat: '</table>',
+            valueDecimals: 2
+        },
+
+        series: data,
+
+        exporting: {
+            showTable: false
+        }
+    });
+}
+
+drawData(); 
+</script>
+
+</body>
+</html>
+
