@@ -13,31 +13,87 @@
 
   <script>
     (async () => {
-      // Get random data for this sample
-      function getRandomData(topology) {
-        return topology.objects.default.geometries.map(() =>
-          Math.round(Math.random() * 100)
-        );
-      }
-      // Function to calculate percentiles and update colorAxis
+      function calculatePercentileDataClasses(data) {
+        const values = data
+          .map((item) => item.value || item[1] || item)
+          .filter((val) => val !== null && val !== undefined && !isNaN(val));
 
-      
+        const sorted = values.slice().sort((a, b) => a - b);
+
+        if (sorted.length === 0) return [];
+
+        const getPercentile = (arr, p) => {
+          const index = Math.max(
+            0,
+            Math.min(Math.floor(arr.length * p), arr.length - 1)
+          );
+          return arr[index];
+        };
+
+        // Calculate quintiles (20%, 40%, 60%, 80%)
+        const percentiles = [
+          sorted[0], // 0% (min)
+          getPercentile(sorted, 0.2), // 20th percentile
+          getPercentile(sorted, 0.4), // 40th percentile
+          getPercentile(sorted, 0.6), // 60th percentile
+          getPercentile(sorted, 0.8), // 80th percentile
+          sorted[sorted.length - 1], // 100% (max)
+        ];
+
+        const colors = ["#E6A532", "#F0CD91", "#F0CD91", "#AAB9E1", "#2D50A0"];
+
+        return colors.map((color, i) => ({
+          from: percentiles[i],
+          //to: i < colors.length - 1 ? percentiles[i + 1] : undefined,
+          to: percentiles[i + 1],
+          color: color,
+        }));
+      }
 
       const topology = await fetch(
-        "https://code.highcharts.com/mapdata/custom/world.topo.json"
+        "https://code.highcharts.com/mapdata/custom/europe.topo.json"
       ).then((response) => response.json());
 
       const antarctica = await fetch(
         "https://code.highcharts.com/mapdata/custom/antarctica.topo.json"
       ).then((response) => response.json());
 
-      const data = getRandomData(topology);
+      //const data = getNewData(topology);
+      //read data from file data/map1.json
+      //   const response1 = await fetch("data/map1.json");
+      //   if (!response1.ok) {
+      //     throw new Error("Network response was not ok");
+      //   }
+      //   const data1 = await response1.json();
+      // console.log(data1);
 
-     
+      //   const response = await fetch("data/map11.json");
+      //   if (!response.ok) {
+      //     throw new Error("Network response was not ok");
+      //   }
+      //   const data11 = await response.json();
+      //get param index_code from url
+      const urlParams = new URLSearchParams(window.location.search);
+      const indexCode = urlParams.get("index_code") || "imp_sdg_07_40";
+      console.log("Index Code:", indexCode);
+
+      const data = await fetch(
+        "http://impactapi.jrc.com/api/v1/en/map/high?index_code=" + indexCode
+      ).then((response) => response.json());
+
+      console.log(data);
+
+      const dataClasses = calculatePercentileDataClasses(data);
 
       let chart;
+      Highcharts.setOptions({
+        lang: {
+          thousandsSep: "",
+          decimalPoint: ".",
+        },
+      });
 
-      const drawMap = (projectionKey) => {
+      const drawMap = () => {
         // Initialize the chart
         if (!chart) {
           console.time("@mapChart");
@@ -80,15 +136,15 @@
               projection: {
                 name: "WebMercator",
               },
-              zoom: 2,
+              zoom: 3,
               center: [6.5, 61],
             },
 
-            // colorAxis: {
-            //   dataClasses: dataClasses,
-            // },
-
             colorAxis: {
+              dataClasses: dataClasses,
+            },
+
+            colorAxis1: {
               dataClasses: [
                 {
                   from: 0,
@@ -138,9 +194,11 @@
 
             series: [
               {
-                data,
+                allAreas: true,
+                data: data,
                 mapData: topology,
-                joinBy: null,
+                //joinBy: null,
+                joinBy: ["iso-a2", "code"],
                 name: "Global Health Security Index",
                 dataLabels: {
                   enabled: false,
@@ -148,13 +206,13 @@
                 },
                 clip: false,
               },
-              {
-                mapData: antarctica,
-                allAreas: true,
-                name: "Antarctica",
-                clip: false,
-                opacity: 0.75,
-              },
+              // {
+              //   mapData: antarctica,
+              //   allAreas: true,
+              //   name: "Antarctica",
+              //   clip: false,
+              //   opacity: 0.75,
+              // },
             ],
           });
           console.timeEnd("@mapChart");
@@ -169,7 +227,7 @@
         // Toggle buttons
       };
 
-      drawMap("equalearth");
+      drawMap();
     })();
   </script>
 </div>

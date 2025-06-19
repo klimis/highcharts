@@ -1,0 +1,138 @@
+
+[
+    {
+        "hc-key": "IT",
+        "value": 11,
+        "_i": 6
+    },
+    {
+        "hc-key": "FR",
+        "value": 27,
+        "_i": 6
+    },
+    {
+        "hc-key": "FM",
+        "value": 13,
+        "_i": 7
+    },
+    {
+        "hc-key": "CN",
+        "value": 35,
+        "_i": 8
+    },
+    {
+        "hc-key": "PT",
+        "value": 64,
+        "_i": 9
+    },
+    {
+        "hc-key": "SW",
+        "value": 10,
+        "_i": 10
+    },
+    {
+        "hc-key": "SH",
+        "value": 56,
+        "_i": 11
+    },
+    {
+        "hc-key": "BR",
+        "value": 95,
+        "_i": 12
+    },
+    {
+        "hc-key": "KI",
+        "value": 88,
+        "_i": 13
+    },
+    {
+        "hc-key": "PH",
+        "value": 62,
+        "_i": 14
+    },
+    {
+        "hc-key": "MX",
+        "value": 39,
+        "_i": 15
+    },
+    {
+        "hc-key": "ES",
+        "value": 98,
+        "_i": 16
+    },
+    {
+        "hc-key": "BU",
+        "value": 66,
+        "_i": 17
+    },
+    {
+        "hc-key": "MV",
+        "value": 71,
+        "_i": 18
+    },
+    {
+        "hc-key": "SP",
+        "value": 95,
+        "_i": 19
+    },
+    {
+        "hc-key": "GB",
+        "value": 43,
+        "_i": 20
+    },
+    {
+        "hc-key": "GR",
+        "value": 90,
+        "_i": 21
+    },
+    {
+        "hc-key": "AS",
+        "value": 47,
+        "_i": 22
+    },
+    {
+        "hc-key": "DK",
+        "value": 38,
+        "_i": 23
+    },
+    {
+        "hc-key": "GL",
+        "value": 1,
+        "_i": 24
+    },
+    {
+        "hc-key": "GU",
+        "value": 91,
+        "_i": 25
+    },
+    {
+        "hc-key": "MP",
+        "value": 97,
+        "_i": 26
+    },
+    {
+        "hc-key": "PR",
+        "value": 20,
+        "_i": 27
+    },
+    {
+        "hc-key": "VI",
+        "value": 79,
+        "_i": 28
+    },
+    {
+        "hc-key": "CA",
+        "value": 62,
+        "_i": 29
+    },
+    {
+        "hc-key": "ST",
+        "value": 58,
+        "_i": 30
+    },
+    {
+        "hc-key": "CV",
+        "value": 12,
+        "_i": 31
+    }
+]

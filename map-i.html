@@ -1,274 +1,179 @@
 <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+<script src="https://code.highcharts.com/maps/modules/data.js"></script>
 <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
+<script src="https://code.highcharts.com/maps/modules/accessibility.js"></script>
 
-<div class="main container-fluid">
-  <h1>Highcharts Projection Explorer</h1>
-
-  <div class="row">
-    <div class="col-lg-8">
-      <div id="container"></div>
-    </div>
+<div id="container">
+  <div class="loading">
+    <i class="icon-spinner icon-spin icon-large"></i>
+    Loading data from Google Spreadsheets...
   </div>
-
-  <script>
-    (async () => {
-      // Get random data for this sample
-      // function getRandomData(topology) {
-      //   return topology.objects.default.geometries.map(() =>
-      //     Math.round(Math.random() * 100)
-      //   );
-      // }
-      function getNewData(topology) {
-        return topology.objects.default.geometries.map((g) => {
-          return {
-            name: g.id,
-            value: Math.round(Math.random() * 100),
-          };
-        });
-      }
-
-      function calculatePercentileDataClasses(data) {
-        const values = data
-          .map((item) => item.value || item[1] || item)
-          .filter((val) => val !== null && val !== undefined && !isNaN(val));
-
-        const sorted = values.slice().sort((a, b) => a - b);
-
-        if (sorted.length === 0) return [];
-
-        const getPercentile = (arr, p) => {
-          const index = Math.max(
-            0,
-            Math.min(Math.floor(arr.length * p), arr.length - 1)
-          );
-          return arr[index];
-        };
-
-        // Calculate quintiles (20%, 40%, 60%, 80%)
-        const percentiles = [
-          sorted[0], // 0% (min)
-          getPercentile(sorted, 0.2), // 20th percentile
-          getPercentile(sorted, 0.4), // 40th percentile
-          getPercentile(sorted, 0.6), // 60th percentile
-          getPercentile(sorted, 0.8), // 80th percentile
-          sorted[sorted.length - 1], // 100% (max)
-        ];
-
-        const colors = ["#E6A532", "#F0CD91", "#F0CD91", "#AAB9E1", "#2D50A0"];
-
-        return colors.map((color, i) => ({
-          from: percentiles[i],
-          //to: i < colors.length - 1 ? percentiles[i + 1] : undefined,
-          to: percentiles[i + 1],
-          color: color,
-        }));
-      }
-
-      const topology = await fetch(
-        "https://code.highcharts.com/mapdata/custom/world.topo.json"
-      ).then((response) => response.json());
-
-      const antarctica = await fetch(
-        "https://code.highcharts.com/mapdata/custom/antarctica.topo.json"
-      ).then((response) => response.json());
-
-      const data = getNewData(topology);
-      const dataClasses = calculatePercentileDataClasses(data);
-      console.log("Data:", data);
-
-      let chart;
-
-      const drawMap = () => {
-        // Initialize the chart
-        if (!chart) {
-          console.time("@mapChart");
-          chart = Highcharts.mapChart("container", {
-            chart: {
-              height: "65%",
-              spacing: [10, 1, 10, 1],
-            },
-
-            title: {
-              text: undefined,
-            },
-
-            legend: {
-              enabled: true,
-              floating: true,
-              align: "left",
-              verticalAlign: "bottom",
-              layout: "horizontal",
-              borderWidth: 2,
-              backgroundColor: "lightgray",
-              transparent: true,
-              borderColor: "white",
-              itemStyle: {
-                fontSize: "0.8rem",
-              },
-            },
-
-            mapNavigation: {
-              enabled: true,
-              enableDoubleClickZoomTo: true,
-              buttonOptions: {
-                verticalAlign: "top",
-              },
-            },
-
-            mapView: {
-              // projection,
-
-              projection: {
-                name: "WebMercator",
-              },
-              zoom: 2,
-              center: [6.5, 61],
-            },
-
-            colorAxis: {
-              dataClasses: dataClasses,
-            },
-
-            colorAxis1: {
-              dataClasses: [
-                {
-                  from: 0,
-                  to: 20,
-                  color: "#E6A532",
-                },
-                {
-                  from: 20,
-                  to: 40,
-                  color: "#F0CD91",
-                },
-                {
-                  from: 40,
-                  to: 60,
-                  color: "#F0CD91",
-                },
-                {
-                  from: 60,
-                  to: 80,
-                  color: "#AAB9E1",
-                },
-                {
-                  from: 80,
-                  color: "#2D50A0",
-                },
-              ],
-            },
-
-            tooltip: {
-              pointFormat:
-                "<strong>{point.name}</strong> <br/> Score: <strong>{point.value}</strong> <br/>Position: <strong>{point.value}th of 195 countries</strong> <br/> <i>Bottom Performer</i>",
-            },
-
-            plotOptions: {
-              series: {
-                animationLimit: 500,
-                states: {
-                  inactive: {
-                    opacity: 1,
-                  },
-                },
-              },
-              mapline: {
-                enableMouseTracking: false,
-              },
-            },
-
-            series: [
-              {
-                data,
-                mapData: topology,
-                joinBy: null,
-                name: "Global Health Security Index",
-                dataLabels: {
-                  enabled: false,
-                  format: "{point.name}",
-                },
-                clip: false,
-              },
-              {
-                mapData: antarctica,
-                allAreas: true,
-                name: "Antarctica",
-                clip: false,
-                opacity: 0.75,
-              },
-            ],
-          });
-          console.timeEnd("@mapChart");
-        } else {
-          chart.update({
-            mapView: {
-              projection,
-            },
-          });
-        }
-
-        // Toggle buttons
-      };
-
-      drawMap();
-    })();
-  </script>
 </div>
 
-<style>
-  * {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-      sans-serif;
-  }
+<script>
+  (async () => {
+    const topology = await fetch(
+      "https://code.highcharts.com/mapdata/custom/world.topo.json"
+    ).then((response) => response.json());
 
-  .main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 10px;
-  }
+    const response1 = await fetch("data/googlespread.json");
+    if (!response1.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const data1 = await response1.json();
+    drawChart(data1);
 
-  #container {
-    min-width: 310px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
+    function drawChart(data) {
+      return Highcharts.mapChart("container", {
+        chart: {
+          map: topology,
+        },
 
-  .main #small-world-container {
-    max-width: 150px;
-    margin-top: 1rem;
-    min-width: 75px;
-    height: 150px;
-  }
+        colors: [
+          "rgba(255,0,0,1)",
+          "rgba(255,0,0,1)",
+          "rgba(19,64,117,0.4)",
+          "rgba(19,64,117,0.5)",
+          "rgba(19,64,117,0.6)",
+          "rgba(19,64,117,0.8)",
+          "rgba(19,64,117,1)",
+        ],
 
-  .main h1 {
-    font-size: 1.5rem !important;
-  }
+        title: {
+          text: "Population density by country (/km²)",
+          align: "left",
+        },
 
-  .main .mt-4 {
-    margin-top: 1.5rem !important;
-    min-width: 25%;
-  }
+        mapNavigation: {
+          enabled: true,
+          buttonOptions: {
+            align: "right",
+          },
+        },
 
-  .main .loading {
-    margin-top: 10em;
-    text-align: center;
-    color: gray;
-  }
+        mapView: {
+          fitToGeometry: {
+            type: "MultiPoint",
+            coordinates: [
+              // Alaska west
+              [-164, 54],
+              // Greenland north
+              [-35, 84],
+              // New Zealand east
+              [179, -38],
+              // Chile south
+              [-68, -55],
+            ],
+          },
+        },
 
-  .main .btn-group {
-    flex-wrap: wrap;
-  }
+        legend: {
+          title: {
+            text: "Individuals per km²",
+            style: {
+              color:
+                // theme
+                (Highcharts.defaultOptions &&
+                  Highcharts.defaultOptions.legend &&
+                  Highcharts.defaultOptions.legend.title &&
+                  Highcharts.defaultOptions.legend.title.style &&
+                  Highcharts.defaultOptions.legend.title.style.color) ||
+                "black",
+            },
+          },
+          align: "left",
+          verticalAlign: "bottom",
+          floating: true,
+          layout: "vertical",
+          valueDecimals: 0,
+          backgroundColor:
+            // theme
+            (Highcharts.defaultOptions &&
+              Highcharts.defaultOptions.legend &&
+              Highcharts.defaultOptions.legend.backgroundColor) ||
+            "rgba(255, 255, 255, 0.85)",
+          symbolRadius: 0,
+          symbolHeight: 14,
+        },
 
-  .main .btn {
-    line-height: 1.5;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    margin: 0.1rem 0;
-  }
+        colorAxis: {
+          dataClasses: [
+            {
+              to: 3,
+              color: "#0000ee",
+            },
+            {
+              from: 3,
+              to: 10,
+              color: "#00eeee",
+            },
+            {
+              from: 10,
+              to: 30,
+              color: "#00ee00",
+            },
+            {
+              from: 30,
+              to: 100,
+              color: "#bbee00",
+            },
+            {
+              from: 100,
+              to: 300,
+              color: "#eeee00",
+            },
+            {
+              from: 300,
+              to: 1000,
+              color: "#ee6600",
+            },
+            {
+              from: 1000,
+              color: "#bb0000",
+            },
+          ],
+        },
 
-  #descriptions div {
-    display: none;
-  }
-</style>
+        series: [
+          {
+            data: data,
+            joinBy: ["iso-a2", "code"],
+            animation: true,
+            name: "Population density",
+            tooltip: {
+              valueSuffix: "/km²",
+            },
+            shadow: false,
+          },
+        ],
+      });
+    }
+
+    // Load the data from a Google Spreadsheet
+    // https://docs.google.com/spreadsheets/d/1WBx3mRqiomXk_ks1a5sEAtJGvYukguhAkcCuRDrY1L0
+    // Highcharts.data({
+    //   googleAPIKey: "AIzaSyCQ0Jh8OFRShXam8adBbBcctlbeeA-qJOk",
+    //   googleSpreadsheetKey: "1eSoQeilFp0HI-qgqr9-oXdCh5G_trQR2HBaWt_U_n78",
+
+    //   // Custom handler when the spreadsheet is parsed
+    //   parsed: function (columns) {
+    //     // Read the columns into the data array
+    //     const data = columns[0].slice(1).map((code, i) => ({
+    //       code: code.toUpperCase(),
+    //       value: parseFloat(columns[2][i + 1]),
+    //       name: columns[1][i + 1],
+    //     }));
+    //     console.log(data);
+    //     drawChart(data);
+    //   },
+    //   error: function () {
+    //     const chart = drawChart();
+    //     chart.showLoading(
+    //       '<i class="icon-frown icon-large"></i> ' +
+    //         "Error loading data from Google Spreadsheets"
+    //     );
+    //   },
+    // });
+  })();
+</script>
