@@ -3,8 +3,29 @@
 <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
 
 <div class="main container-fluid">
-  <h1>Highcharts Projection Explorer</h1>
-
+  <div style="text-align: center; margin-bottom: 1rem">
+    <ul>
+      <li>
+        <a href="/map.html?index_code=imp_sdg_07_40"
+          >Share of renewable energy in gross final energy consumption</a
+        >
+      </li>
+      <li>
+        <a href="/map.html?index_code=imp_sdg_12_31">Consumption footprint</a>
+      </li>
+      <li>
+        <a href="/map.html?index_code=imp_educ_uoe_grad04"
+          >Women Graduates in STEM per 1000 of population</a
+        >
+      </li>
+      <li>
+        <a href="/map.html?index_code=imp_sdg_01_10"
+          >People at risk of poverty or social exclusion</a
+        >
+      </li>
+    </ul>
+    <h1 id="indicator"></h1>
+  </div>
   <div class="row">
     <div class="col-lg-8">
       <div id="container"></div>
@@ -40,50 +61,93 @@
           sorted[sorted.length - 1], // 100% (max)
         ];
 
-        const colors = ["#E6A532", "#F0CD91", "#F0CD91", "#AAB9E1", "#2D50A0"];
+        const colors = ["#E6A532", "#F0CD91", "#AAB9E1", "#6487C3", "#2D50A0"];
 
         return colors.map((color, i) => ({
           from: percentiles[i],
-          //to: i < colors.length - 1 ? percentiles[i + 1] : undefined,
           to: percentiles[i + 1],
           color: color,
         }));
       }
 
+      function calculatePercentiles(data) {
+        const values = data
+          .map((item) => item.value || item[1] || item)
+          .filter((val) => val !== null && val !== undefined && !isNaN(val));
+
+        const sorted = values.slice().sort((a, b) => a - b);
+
+        if (sorted.length === 0) return [];
+
+        const getPercentile = (arr, p) => {
+          const index = Math.max(
+            0,
+            Math.min(Math.floor(arr.length * p), arr.length - 1)
+          );
+          return arr[index];
+        };
+
+        // Calculate quintiles (20%, 40%, 60%, 80%)
+        const percentiles = [
+          sorted[0], // 0% (min)
+          getPercentile(sorted, 0.2), // 20th percentile
+          getPercentile(sorted, 0.4), // 40th percentile
+          getPercentile(sorted, 0.6), // 60th percentile
+          getPercentile(sorted, 0.8), // 80th percentile
+          sorted[sorted.length - 1], // 100% (max)
+        ];
+
+        return percentiles;
+      }
+
       const topology = await fetch(
-        "https://code.highcharts.com/mapdata/custom/europe.topo.json"
+        "https://code.highcharts.com/mapdata/custom/world.topo.json"
       ).then((response) => response.json());
 
       const antarctica = await fetch(
         "https://code.highcharts.com/mapdata/custom/antarctica.topo.json"
       ).then((response) => response.json());
 
-      //const data = getNewData(topology);
-      //read data from file data/map1.json
-      //   const response1 = await fetch("data/map1.json");
-      //   if (!response1.ok) {
-      //     throw new Error("Network response was not ok");
-      //   }
-      //   const data1 = await response1.json();
-      // console.log(data1);
-
-      //   const response = await fetch("data/map11.json");
-      //   if (!response.ok) {
-      //     throw new Error("Network response was not ok");
-      //   }
-      //   const data11 = await response.json();
-      //get param index_code from url
       const urlParams = new URLSearchParams(window.location.search);
       const indexCode = urlParams.get("index_code") || "imp_sdg_07_40";
-      console.log("Index Code:", indexCode);
 
       const data = await fetch(
-        "http://impactapi.jrc.com/api/v1/en/map/high?index_code=" + indexCode
+        "https://impact.api.coin-dev.eu/api/v1/en/map/high?index_code=" +
+          indexCode
       ).then((response) => response.json());
 
-      console.log(data);
+      const info = await fetch(
+        "https://impact.api.coin-dev.eu/api/v1/en/info?index_code=" + indexCode
+      ).then((response) => response.json());
+
+      document.getElementById("indicator").innerText = info.data.name;
 
       const dataClasses = calculatePercentileDataClasses(data);
+      //reverse the order of dataClasses to have the lowest value first
+      //dataClasses.reverse();
+      const percentiles = calculatePercentiles(data);
+
+      //split data into multiple series based on percentiles
+      const seriesData = dataClasses.map((dataClass, index) => {
+        return {
+          name: `Percentile ${index + 1}`,
+          data: data
+            .filter((item) => {
+              const value = item.value || item[1] || item;
+              return (
+                value >= dataClass.from && value < (dataClass.to || Infinity)
+              );
+            })
+            .map((item) => ({
+              code: item.code,
+              name: item.name,
+              value: item.value || item[1] || item,
+            })),
+          color: dataClass.color,
+        };
+      });
+      //console.log("Data Classes:", dataClasses);
+      //console.log("Series Data:", seriesData);
 
       let chart;
       Highcharts.setOptions({
@@ -93,141 +157,146 @@
         },
       });
 
-      const drawMap = () => {
-        // Initialize the chart
-        if (!chart) {
-          console.time("@mapChart");
-          chart = Highcharts.mapChart("container", {
-            chart: {
-              height: "65%",
-              spacing: [10, 1, 10, 1],
+      Highcharts.mapChart("container", {
+        chart: {
+          height: "65%",
+          spacing: [10, 1, 10, 1],
+          events: {
+            load: function () {
+              //find items with class "highcharts-point inside class highcharts-legend-item"
+              const legendItems = document.querySelectorAll(
+                ".highcharts-legend-item"
+              );
+              legendItems.forEach((item, index) => {
+                const point = item.querySelector(".highcharts-point");
+                if (point) {
+                  point.style.width = 60;
+                }
+              });
+              //at the very end of item .highcharts-legend add some text
+             
+            //   const legend = document.querySelector(".highcharts-legend");
+            //   if (legend) {
+            //     console.log("Legend Element:", legend);
+            //     const legendText = document.createElement("span");
+            //     legendText.innerHTML =
+            //       "<strong>Legend:</strong> The range of scores is aa";
+            //     legend.appendChild(legendText);
+            //   }
             },
+          },
+        },
 
-            title: {
-              text: undefined,
+        title: {
+          text: "",
+        },
+
+        legend: {
+          title: {
+            //align bottom span to left and top span to right. font bold
+            text: "The range of scores is divided into five equal parts (quintiles). \
+             <br/><span style='float: left; font-weight: bold;padding-left:5px'>Bottom</span> <span style='float: right; font-weight: bold;padding-right:5px'>Top</span>",
+            style: {
+              color: "black",
+              fontWeight: "normal",
             },
+          },
+          enabled: true,
+          floating: true,
+          align: "left",
+          verticalAlign: "bottom",
+          layout: "horizontal",
+          borderWidth: 2,
+          backgroundColor: "lightgray",
+          transparent: true,
+          borderColor: "white",
+          symbolRadius: 0,
+          symbolWidth: 27,
+          symbolHeight: 14,
+          squareSymbol: true,
+          symbolPadding: 23,
+          useHTML: true,
+          labelFormatter: function () {
+            //console.log("Label Formatter:", this.from);
+            if (this.from < 12) {
+              //return "Bottom";
+            }
 
-            legend: {
-              enabled: true,
-              floating: true,
-              align: "left",
-              verticalAlign: "bottom",
-              layout: "horizontal",
-              borderWidth: 2,
-              backgroundColor: "lightgray",
-              transparent: true,
-              borderColor: "white",
-              itemStyle: {
-                fontSize: "0.8rem",
+            if (this.to === undefined) {
+              return "Above " + this.from;
+            }
+            //return this.from + " - " + this.to;
+            return "";
+          },
+        },
+
+        mapNavigation: {
+          enabled: true,
+          enableDoubleClickZoomTo: true,
+          buttonOptions: {
+            verticalAlign: "top",
+          },
+        },
+
+        mapView: {
+          // projection,
+
+          projection: {
+            name: "WebMercator",
+          },
+          zoom: 3.2,
+          center: [6.5, 55],
+        },
+
+        colorAxis: {
+          dataClasses: dataClasses,
+        },
+
+        credits: {
+          enabled: false,
+        },
+        tooltip: {
+          pointFormat:
+            "<strong>{point.name}</strong> <br/> Score: <strong>{point.value}</strong> <br/>Position: <strong>{point.value}th of 195 countries</strong> <br/> <i>Bottom Performer</i>",
+        },
+
+        plotOptions: {
+          series: {
+            animationLimit: 500,
+            states: {
+              inactive: {
+                opacity: 1,
               },
             },
+          },
+          mapline: {
+            enableMouseTracking: false,
+          },
+        },
 
-            mapNavigation: {
-              enabled: true,
-              enableDoubleClickZoomTo: true,
-              buttonOptions: {
-                verticalAlign: "top",
-              },
+        series: [
+          {
+            allAreas: true,
+            data: data,
+            mapData: topology,
+            //joinBy: null,
+            joinBy: ["iso-a2", "code"],
+            name: "Global Health Security Index",
+            dataLabels: {
+              enabled: false,
+              format: "{point.name}",
             },
-
-            mapView: {
-              // projection,
-
-              projection: {
-                name: "WebMercator",
-              },
-              zoom: 3,
-              center: [6.5, 61],
-            },
-
-            colorAxis: {
-              dataClasses: dataClasses,
-            },
-
-            colorAxis1: {
-              dataClasses: [
-                {
-                  from: 0,
-                  to: 20,
-                  color: "#E6A532",
-                },
-                {
-                  from: 20,
-                  to: 40,
-                  color: "#F0CD91",
-                },
-                {
-                  from: 40,
-                  to: 60,
-                  color: "#F0CD91",
-                },
-                {
-                  from: 60,
-                  to: 80,
-                  color: "#AAB9E1",
-                },
-                {
-                  from: 80,
-                  color: "#2D50A0",
-                },
-              ],
-            },
-
-            tooltip: {
-              pointFormat:
-                "<strong>{point.name}</strong> <br/> Score: <strong>{point.value}</strong> <br/>Position: <strong>{point.value}th of 195 countries</strong> <br/> <i>Bottom Performer</i>",
-            },
-
-            plotOptions: {
-              series: {
-                animationLimit: 500,
-                states: {
-                  inactive: {
-                    opacity: 1,
-                  },
-                },
-              },
-              mapline: {
-                enableMouseTracking: false,
-              },
-            },
-
-            series: [
-              {
-                allAreas: true,
-                data: data,
-                mapData: topology,
-                //joinBy: null,
-                joinBy: ["iso-a2", "code"],
-                name: "Global Health Security Index",
-                dataLabels: {
-                  enabled: false,
-                  format: "{point.name}",
-                },
-                clip: false,
-              },
-              // {
-              //   mapData: antarctica,
-              //   allAreas: true,
-              //   name: "Antarctica",
-              //   clip: false,
-              //   opacity: 0.75,
-              // },
-            ],
-          });
-          console.timeEnd("@mapChart");
-        } else {
-          chart.update({
-            mapView: {
-              projection,
-            },
-          });
-        }
-
-        // Toggle buttons
-      };
-
-      drawMap();
+            clip: false,
+          },
+          {
+            mapData: antarctica,
+            allAreas: true,
+            name: "Antarctica",
+            clip: false,
+            opacity: 0.75,
+          },
+        ],
+      });
     })();
   </script>
 </div>
@@ -286,5 +355,25 @@
 
   #descriptions div {
     display: none;
+  }
+  /**
+    * Add some basic styles for the ul li links    
+    */
+  .main ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  .main ul li {
+    margin: 0.5rem 0;
+  }
+  .main ul li a {
+    text-decoration: none;
+    color: #007bff;
+  }
+  .main ul li a:hover {
+    text-decoration: underline;
+  }
+  .main ul li a:visited {
+    color: #0056b3;
   }
 </style>
