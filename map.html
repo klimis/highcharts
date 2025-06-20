@@ -34,72 +34,7 @@
 
   <script>
     (async () => {
-      function calculatePercentileDataClasses(data) {
-        const values = data
-          .map((item) => item.value || item[1] || item)
-          .filter((val) => val !== null && val !== undefined && !isNaN(val));
-
-        const sorted = values.slice().sort((a, b) => a - b);
-
-        if (sorted.length === 0) return [];
-
-        const getPercentile = (arr, p) => {
-          const index = Math.max(
-            0,
-            Math.min(Math.floor(arr.length * p), arr.length - 1)
-          );
-          return arr[index];
-        };
-
-        // Calculate quintiles (20%, 40%, 60%, 80%)
-        const percentiles = [
-          sorted[0], // 0% (min)
-          getPercentile(sorted, 0.2), // 20th percentile
-          getPercentile(sorted, 0.4), // 40th percentile
-          getPercentile(sorted, 0.6), // 60th percentile
-          getPercentile(sorted, 0.8), // 80th percentile
-          sorted[sorted.length - 1], // 100% (max)
-        ];
-
-        const colors = ["#E6A532", "#F0CD91", "#AAB9E1", "#6487C3", "#2D50A0"];
-
-        return colors.map((color, i) => ({
-          from: percentiles[i],
-          to: percentiles[i + 1],
-          color: color,
-        }));
-      }
-
-      function calculatePercentiles(data) {
-        const values = data
-          .map((item) => item.value || item[1] || item)
-          .filter((val) => val !== null && val !== undefined && !isNaN(val));
-
-        const sorted = values.slice().sort((a, b) => a - b);
-
-        if (sorted.length === 0) return [];
-
-        const getPercentile = (arr, p) => {
-          const index = Math.max(
-            0,
-            Math.min(Math.floor(arr.length * p), arr.length - 1)
-          );
-          return arr[index];
-        };
-
-        // Calculate quintiles (20%, 40%, 60%, 80%)
-        const percentiles = [
-          sorted[0], // 0% (min)
-          getPercentile(sorted, 0.2), // 20th percentile
-          getPercentile(sorted, 0.4), // 40th percentile
-          getPercentile(sorted, 0.6), // 60th percentile
-          getPercentile(sorted, 0.8), // 80th percentile
-          sorted[sorted.length - 1], // 100% (max)
-        ];
-
-        return percentiles;
-      }
-
+      //process.env.ENVIRONMENT;
       const topology = await fetch(
         "https://code.highcharts.com/mapdata/custom/world.topo.json"
       ).then((response) => response.json());
@@ -110,18 +45,21 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       const indexCode = urlParams.get("index_code") || "imp_sdg_07_40";
+      const year = urlParams.get("year") || 2023;
+      
 
-      const data = await fetch(
-        "https://impact.api.coin-dev.eu/api/v1/en/map/high?index_code=" +
-          indexCode
+      const _response = await fetch(
+        env() + "/api/v1/en/map/high?index_code=" + indexCode + "&year=" + year
       ).then((response) => response.json());
+      const data = _response.data;
+
+      console.log("Data:",data);
 
       const info = await fetch(
-        "https://impact.api.coin-dev.eu/api/v1/en/info?index_code=" + indexCode
+        env() + "/api/v1/en/info?index_code=" + indexCode
       ).then((response) => response.json());
 
-      console.log("direction:", info.data.attributes.target2029Baseline2024);
-      document.getElementById("indicator").innerText = info.data.name;
+      document.getElementById("indicator").innerText = info.data.name + " (" + year + ")";
       const reverse =
         info.data.attributes.target2029Baseline2024 === "-" ? true : false;
 
@@ -158,16 +96,7 @@
                   point.style.width = 60;
                 }
               });
-              //at the very end of item .highcharts-legend add some text
-
-              //   const legend = document.querySelector(".highcharts-legend");
-              //   if (legend) {
-              //     console.log("Legend Element:", legend);
-              //     const legendText = document.createElement("span");
-              //     legendText.innerHTML =
-              //       "<strong>Legend:</strong> The range of scores is aa";
-              //     legend.appendChild(legendText);
-              //   }
+              
             },
           },
         },
@@ -185,11 +114,7 @@
              <span style='float: left; font-weight: bold;padding-left:5px'>Top</span>"
               : "The range of scores is divided into five equal parts (quintiles) <br/><span style='float: left; font-weight: bold;padding-left:5px'>Bottom</span> \
              <span style='float: right; font-weight: bold;padding-right:5px'>Top</span>",
-            //if reverse is true, then the legend will be reversed
-            //
-            // text: "The range of scores is divided into five equal parts (quintiles). \
-            //  <br/><span style='float: left; font-weight: bold;padding-left:5px'>Bottom</span> \
-            //  <span style='float: right; font-weight: bold;padding-right:5px'>Top</span>",
+            
             style: {
               color: "black",
               fontWeight: "normal",
@@ -251,7 +176,8 @@
         },
         tooltip: {
           pointFormat:
-            "<strong>{point.name}</strong> <br/> Score: <strong>{point.value}</strong> <br/>Position: <strong>{point.value}th of 195 countries</strong> <br/> <i>Bottom Performer</i>",
+            "<strong>{point.name}</strong> <br/> Score: <strong>{point.value}</strong> ({point.year}) <br/>\
+            Position: <strong>{point.value}th of 195 countries</strong> <br/> <i>Bottom Performer</i>",
         },
 
         plotOptions: {
@@ -282,16 +208,89 @@
             },
             clip: false,
           },
-          {
-            mapData: antarctica,
-            allAreas: true,
-            name: "Antarctica",
-            clip: false,
-            opacity: 0.75,
-          },
+        //   {
+        //     mapData: antarctica,
+        //     allAreas: true,
+        //     name: "Antarctica",
+        //     clip: false,
+        //     opacity: 0.75,
+        //   },
         ],
       });
     })();
+    function calculatePercentileDataClasses(data) {
+      const values = data
+        .map((item) => item.value || item[1] || item)
+        .filter((val) => val !== null && val !== undefined && !isNaN(val));
+
+      const sorted = values.slice().sort((a, b) => a - b);
+
+      if (sorted.length === 0) return [];
+
+      const getPercentile = (arr, p) => {
+        const index = Math.max(
+          0,
+          Math.min(Math.floor(arr.length * p), arr.length - 1)
+        );
+        return arr[index];
+      };
+
+      // Calculate quintiles (20%, 40%, 60%, 80%)
+      const percentiles = [
+        sorted[0], // 0% (min)
+        getPercentile(sorted, 0.2), // 20th percentile
+        getPercentile(sorted, 0.4), // 40th percentile
+        getPercentile(sorted, 0.6), // 60th percentile
+        getPercentile(sorted, 0.8), // 80th percentile
+        sorted[sorted.length - 1], // 100% (max)
+      ];
+
+      const colors = ["#E6A532", "#F0CD91", "#AAB9E1", "#6487C3", "#2D50A0"];
+
+      return colors.map((color, i) => ({
+        from: percentiles[i],
+        to: percentiles[i + 1],
+        color: color,
+      }));
+    }
+
+    function calculatePercentiles(data) {
+      const values = data
+        .map((item) => item.value || item[1] || item)
+        .filter((val) => val !== null && val !== undefined && !isNaN(val));
+
+      const sorted = values.slice().sort((a, b) => a - b);
+
+      if (sorted.length === 0) return [];
+
+      const getPercentile = (arr, p) => {
+        const index = Math.max(
+          0,
+          Math.min(Math.floor(arr.length * p), arr.length - 1)
+        );
+        return arr[index];
+      };
+
+      // Calculate quintiles (20%, 40%, 60%, 80%)
+      const percentiles = [
+        sorted[0], // 0% (min)
+        getPercentile(sorted, 0.2), // 20th percentile
+        getPercentile(sorted, 0.4), // 40th percentile
+        getPercentile(sorted, 0.6), // 60th percentile
+        getPercentile(sorted, 0.8), // 80th percentile
+        sorted[sorted.length - 1], // 100% (max)
+      ];
+
+      return percentiles;
+    }
+
+    function env() {
+      if (document.location.origin === "http://charts.europa.eu") {
+        return "http://impactapi.jrc.com";
+      } else {
+        return "https://impact.api.coin-dev.eu";
+      }
+    }
   </script>
 </div>
 
