@@ -120,34 +120,19 @@
         "https://impact.api.coin-dev.eu/api/v1/en/info?index_code=" + indexCode
       ).then((response) => response.json());
 
+      console.log("direction:", info.data.attributes.target2029Baseline2024);
       document.getElementById("indicator").innerText = info.data.name;
+      const reverse =
+        info.data.attributes.target2029Baseline2024 === "-" ? true : false;
 
       const dataClasses = calculatePercentileDataClasses(data);
       //reverse the order of dataClasses to have the lowest value first
+
+      if (reverse) {
+        dataClasses.reverse();
+      }
       //dataClasses.reverse();
       const percentiles = calculatePercentiles(data);
-
-      //split data into multiple series based on percentiles
-      const seriesData = dataClasses.map((dataClass, index) => {
-        return {
-          name: `Percentile ${index + 1}`,
-          data: data
-            .filter((item) => {
-              const value = item.value || item[1] || item;
-              return (
-                value >= dataClass.from && value < (dataClass.to || Infinity)
-              );
-            })
-            .map((item) => ({
-              code: item.code,
-              name: item.name,
-              value: item.value || item[1] || item,
-            })),
-          color: dataClass.color,
-        };
-      });
-      //console.log("Data Classes:", dataClasses);
-      //console.log("Series Data:", seriesData);
 
       let chart;
       Highcharts.setOptions({
@@ -174,15 +159,15 @@
                 }
               });
               //at the very end of item .highcharts-legend add some text
-             
-            //   const legend = document.querySelector(".highcharts-legend");
-            //   if (legend) {
-            //     console.log("Legend Element:", legend);
-            //     const legendText = document.createElement("span");
-            //     legendText.innerHTML =
-            //       "<strong>Legend:</strong> The range of scores is aa";
-            //     legend.appendChild(legendText);
-            //   }
+
+              //   const legend = document.querySelector(".highcharts-legend");
+              //   if (legend) {
+              //     console.log("Legend Element:", legend);
+              //     const legendText = document.createElement("span");
+              //     legendText.innerHTML =
+              //       "<strong>Legend:</strong> The range of scores is aa";
+              //     legend.appendChild(legendText);
+              //   }
             },
           },
         },
@@ -193,9 +178,18 @@
 
         legend: {
           title: {
-            //align bottom span to left and top span to right. font bold
-            text: "The range of scores is divided into five equal parts (quintiles). \
-             <br/><span style='float: left; font-weight: bold;padding-left:5px'>Bottom</span> <span style='float: right; font-weight: bold;padding-right:5px'>Top</span>",
+            //if reverse is true, then the legend will be reversed
+            text: reverse
+              ? "The range of scores is divided into five equal parts (quintiles) <br/>\
+              <span style='float: right; font-weight: bold;padding-right:5px'>Bottom</span> \
+             <span style='float: left; font-weight: bold;padding-left:5px'>Top</span>"
+              : "The range of scores is divided into five equal parts (quintiles) <br/><span style='float: left; font-weight: bold;padding-left:5px'>Bottom</span> \
+             <span style='float: right; font-weight: bold;padding-right:5px'>Top</span>",
+            //if reverse is true, then the legend will be reversed
+            //
+            // text: "The range of scores is divided into five equal parts (quintiles). \
+            //  <br/><span style='float: left; font-weight: bold;padding-left:5px'>Bottom</span> \
+            //  <span style='float: right; font-weight: bold;padding-right:5px'>Top</span>",
             style: {
               color: "black",
               fontWeight: "normal",
