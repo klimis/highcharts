@@ -4,7 +4,7 @@
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
 <figure class="highcharts-figure">
-  <select id="series-selector" >
+  <select id="series-selector">
     <option value="none">Select additional series...</option>
     <option value="italy">Italy</option>
     <option value="portugal">Portugal</option>
@@ -79,10 +79,19 @@
 </style>
 
 <script>
+  function env() {
+    if (document.location.origin === "http://charts.europa.eu") {
+      return "http://impactapi.jrc.com";
+    } else if (document.location.origin === "http://charts.coin-dev.eu") {
+      return "https://impact.api.coin-dev.eu";
+    }
+  }
   (async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const indexCode = urlParams.get("index_code") || "imp_sdg_07_40";
     // Load the datasets for the main EU series
     const data = await fetch(
-      "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=eu27"
+      env() + "/api/v1/en/md?index_code=" + indexCode + "&unit_code=AT"
     ).then((response) => response.json());
 
     let detailChart;
@@ -275,15 +284,39 @@
     createMaster();
 
     // Define mappings for API URLs and colors for each country
-    const urlMapping = {
-      italy:
-        "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=it",
-      portugal:
-        "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=pt",
-      denmark:
-        "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=dk",
-      eu27: "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=eu27",
-    };
+    // const urlMapping = {
+    //   it: env() + "/api/v1/en/md?index_code=" + indexCode + "&unit_code=it",
+    //   portugal:
+    //     env() + "/api/v1/en/md?index_code=" + indexCode + "&unit_code=pt",
+    //   denmark:
+    //     env() + "/api/v1/en/md?index_code=" + indexCode + "&unit_code=dk",
+    //   eu27: env() + "/api/v1/en/md?index_code=" + indexCode + "&unit_code=eu27",
+    // };
+    //   ode=it",
+    //   portugal:
+    //     "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=pt",
+    //   denmark:
+    //     "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=dk",
+    //   eu27: "http://coinapi.jrc.com/api/v1/en/impact/md?is_map=1&comp_id=54551&dt_tp_id=1&unit_code=eu27",
+    // };
+    const response = await fetch(
+      "https://impact.api.coin-dev.eu/api/v1/en/country/list?index_code=" +
+        indexCode
+    );
+    let countryData = await response.json();
+    //countryData = countryData;
+    // console.log("Country Data:", countryData);
+    countryData = countryData.data;
+    const urlMapping = {};
+    countryData.forEach((country) => {
+      // console.log("Country:", country);
+      urlMapping[country.code.toLowerCase()] =
+        env() +
+        "/api/v1/en/md?index_code=" +
+        indexCode +
+        "&unit_code=" +
+        country.code;
+    });
 
     const colorMapping = {
       italy: "#4C7C9A",
@@ -299,6 +332,7 @@
         if (country !== "none") {
           if (!masterChart.series.find((s) => s.options.id === country)) {
             try {
+              console.log("Fetching data for", country);
               const fetchedData = await fetch(urlMapping[country]).then(
                 (response) => response.json()
               );
@@ -351,5 +385,32 @@
       });
       detailChart.redraw();
     });
+
+    // Populate the series-selector from API.
+    fetch(
+      "https://impact.api.coin-dev.eu/api/v1/en/country/list?index_code=" +
+        indexCode
+    )
+      .then((response) => response.json())
+      .then((countries) => {
+        const selector = document.getElementById("series-selector");
+        // Clear any existing options and add a default option.
+        selector.innerHTML = "";
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "none";
+        defaultOption.textContent = "Select additional series...";
+        selector.appendChild(defaultOption);
+        const countriesList = countries.data;
+        // Iterate over the country list from the API.
+        countriesList.forEach((country) => {
+          // Assume each country object contains at least "iso2" and "name".
+          const option = document.createElement("option");
+          // Use the ISO2 in lowercase for consistency.
+          option.value = country.code.toLowerCase();
+          option.textContent = country.name;
+          selector.appendChild(option);
+        });
+      })
+      .catch((error) => console.error("Error fetching country list:", error));
   })();
 </script>
