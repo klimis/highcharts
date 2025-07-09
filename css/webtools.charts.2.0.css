@@ -1,0 +1,610 @@
+@media all {
+    .wtCharts {
+        border: 1px solid #ccc;
+        font-family: Arial,Verdana,sans-serif;
+        font-size: 16px;
+        background-color: #fff;
+        position: relative
+    }
+
+    .wt-charts--loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        z-index: 100;
+        display: none
+    }
+
+    .wt-charts--toolbar {
+        padding: 8px;
+        margin: 0;
+        display: flex;
+        background-color: #f3f3f3;
+        border: 0;
+        z-index: 5;
+        border-bottom: 1px solid #ccc;
+        gap: 10px;
+        align-items: start;
+        min-height: 58px;
+        box-sizing: border-box
+    }
+
+    .wt-charts--form {
+        margin-right: auto
+    }
+
+    .wt-charts--container {
+        border: none;
+        padding: 20px 10px
+    }
+
+    .wtCharts .wtChartContainer .highcharts-container {
+        width: 100%!important;
+        box-sizing: border-box
+    }
+
+    .highcharts-root {
+        font-size: 16px!important
+    }
+}
+
+@media all {
+    .wt-charts--skip {
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        right: 4px;
+        border: 0;
+        padding: 12px;
+        text-decoration: none;
+        background-color: #444;
+        z-index: -1;
+        color: #fff;
+        outline: none;
+        font-size: 20px;
+        text-align: center
+    }
+
+    .wt-charts--skip:focus-visible {
+        outline: none;
+        z-index: 40
+    }
+}
+
+@media all {
+    .wt-charts--menu {
+        order: 2
+    }
+
+    .wt-charts--menu .wt-btn {
+        padding: 4px;
+        margin: 0;
+        display: flex;
+        border: 1px solid #fff0;
+        position: relative;
+        background-color: #fff0;
+        cursor: pointer;
+        width: auto;
+        min-width: auto;
+        color: #444;
+        height: auto
+    }
+
+    .wt-charts--menu .wt-btn:focus-visible {
+        border-color: #fff;
+        outline: 3px solid #444;
+        background-color: #fff
+    }
+
+    .wt-charts--menu .wt-link.wt-toggle {
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23ddd' width='24' height='24' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd' clip-rule='evenodd'%3E%3Cpath d='M18 18h-12c-3.311 0-6-2.689-6-6s2.689-6 6-6h12.039c3.293.021 5.961 2.701 5.961 6 0 3.311-2.688 6-6 6zm-12-10c2.208 0 4 1.792 4 4s-1.792 4-4 4-4-1.792-4-4 1.792-4 4-4z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: calc(100% - 10px) center;
+        background-size: auto 36px;
+        padding-right: 70px
+    }
+
+    .wt-charts--menu .wt-link.wt-toggle[aria-pressed='false']:focus-visible,.wt-charts--menu .wt-link.wt-toggle[aria-pressed='false']:hover {
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23fff' width='24' height='24' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd' clip-rule='evenodd'%3E%3Cpath d='M18 18h-12c-3.311 0-6-2.689-6-6s2.689-6 6-6h12.039c3.293.021 5.961 2.701 5.961 6 0 3.311-2.688 6-6 6zm-12-10c2.208 0 4 1.792 4 4s-1.792 4-4 4-4-1.792-4-4 1.792-4 4-4z'/%3E%3C/svg%3E")
+    }
+
+    .wt-charts--menu .wt-link.wt-toggle[aria-pressed='true'] {
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23444' width='24' height='24' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd' clip-rule='evenodd'%3E%3Cpath d='M6 18h12c3.311 0 6-2.689 6-6s-2.689-6-6-6h-12.039c-3.293.021-5.961 2.701-5.961 6 0 3.311 2.688 6 6 6zm12-10c-2.208 0-4 1.792-4 4s1.792 4 4 4 4-1.792 4-4-1.792-4-4-4z'/%3E%3C/svg%3E")
+    }
+
+    .wt-charts--menu .wt-link.wt-toggle[aria-pressed='true']:focus-visible,.wt-charts--menu .wt-link.wt-toggle[aria-pressed='true']:hover {
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23fff' width='24' height='24' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd' clip-rule='evenodd'%3E%3Cpath d='M6 18h12c3.311 0 6-2.689 6-6s-2.689-6-6-6h-12.039c-3.293.021-5.961 2.701-5.961 6 0 3.311 2.688 6 6 6zm12-10c-2.208 0-4 1.792-4 4s1.792 4 4 4 4-1.792 4-4-1.792-4-4-4z'/%3E%3C/svg%3E")
+    }
+
+    .wt-charts--menu .wt-btn svg {
+        width: 30px;
+        height: 30px;
+        pointer-events: none
+    }
+
+    .wt-charts--menu .wt-btn[aria-expanded="true"] {
+        background-color: #fff;
+        border-color: #fff;
+        outline: 3px solid #444
+    }
+
+    .wt-charts--menu,.wt-charts--menu ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        position: relative;
+        font-size: 16px
+    }
+
+    .wt-charts--menu ul {
+        border: 1px solid #444;
+        position: absolute;
+        right: 0;
+        background-color: #fff;
+        min-width: 260px;
+        max-width: 340px;
+        z-index: 2;
+        margin: 4px 0 0;
+        padding: 8px
+    }
+
+    .wt-charts--menu ul li {
+        margin: 0;
+        padding: 0;
+        line-height: 1
+    }
+
+    .wt-charts--menu ul .wt-link {
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #444;
+        outline: none;
+        line-height: 1.4;
+        background-color: #fff0;
+        border: 0;
+        font-size: 16px;
+        flex-grow: 1;
+        cursor: pointer
+    }
+
+    .wt-charts--menu ul button.wt-link {
+        display: block;
+        min-width: 100%;
+        text-align: left
+    }
+
+    .wt-charts--menu ul .wt-link svg {
+        margin-left: auto
+    }
+
+    .wt-charts--menu .wt-separator-top,.wt-charts--menu .wt-separator-true,.wt-charts--menu .wt-separator {
+        border-top: 1px solid #ccc;
+        padding-top: 4px;
+        margin-top: 4px
+    }
+
+    .wt-charts--menu .wt-separator-bottom {
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 4px;
+        margin-bottom: 4px
+    }
+
+    .wt-charts--menu ul .wt-link:hover,.wt-charts--menu ul .wt-link:focus-visible {
+        background-color: #444;
+        color: #fff;
+        outline: none
+    }
+}
+
+@media all {
+    .wt-charts-fullscreen {
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column
+    }
+
+    .wt-charts-fullscreen .wt-charts--skip {
+        display: none
+    }
+
+    .wt-charts-fullscreen .wt-charts--container,.wt-charts-fullscreen.wt-charts--estat .wt-charts--container {
+        flex-grow: 1
+    }
+}
+
+@media all {
+    .wt-charts--header,.wt-charts--footer {
+        display: flex;
+        align-items: center;
+        padding: 0 10px
+    }
+
+    .wt-charts--info-container {
+        position: relative
+    }
+
+    .wt-charts--info-button {
+        height: 30px;
+        width: 30px;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #fff0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0e47cb;
+        background-color: #fff;
+        border-radius: 50px;
+        overflow: hidden;
+        outline: 5px solid #0e47cb;
+        outline-offset: -5px
+    }
+
+    .wt-charts--info-button[aria-expanded="true"],.wt-charts--info-button:focus-visible {
+        outline: 3px solid #444;
+        border-color: #fff
+    }
+
+    .wt-charts--info-content {
+        position: absolute;
+        border: 1px solid #444;
+        padding: 10px;
+        background-color: #fff;
+        z-index: 3;
+        top: 50px;
+        min-width: 340px
+    }
+
+    .highcharts-caption {
+        margin-top: 10px!important
+    }
+}
+
+@media all {
+    .wt-charts--filters {
+        flex-grow: 1;
+        display: flex;
+        align-items: start;
+        gap: 8px;
+        flex-wrap: wrap
+    }
+}
+
+@media all {
+    .wt-charts--sheets,.wt-custom-select {
+        display: flex;
+        align-items: center;
+        position: relative;
+        background-color: #fff
+    }
+
+    .wt-charts--sheets select,.wt-custom-select select {
+        padding: 0 50px 0 15px;
+        margin: 0;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        -ms-appearance: none;
+        appearance: none;
+        border: 1px solid #444;
+        height: 40px;
+        background-color: #fff0;
+        font-size: 16px;
+        outline: none;
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+        text-overflow: ellipsis;
+        width: 100%;
+        max-width: 200px
+    }
+
+    .wt-charts--sheets:after,.wt-custom-select:after {
+        content: "";
+        display: flex;
+        width: 40px;
+        height: 40px;
+        background-color: #444;
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23fff' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M0 7.33l2.829-2.83 9.175 9.339 9.167-9.339 2.829 2.83-11.996 12.17z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat no-repeat;
+        background-size: 14px 14px;
+        background-position: center center;
+        position: absolute;
+        z-index: 1;
+        right: 0
+    }
+
+    .wt-charts--sheets select:focus-visible,.wt-custom-select select:focus-visible {
+        outline: 3px solid #444;
+        border: 1px solid #fff
+    }
+}
+
+@media all {
+    .wt-multiple--container button {
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+        margin: 0;
+        border: 1px solid #004494;
+        min-height: 40px;
+        background-color: #fff;
+        color: #444;
+        font-size: 16px;
+        outline: none;
+        cursor: pointer;
+        text-align: left
+    }
+
+    .wt-multiple--container button:last-child {
+        margin-left: auto
+    }
+
+    .wt-multiple--container button:focus-visible {
+        outline: 3px solid #444;
+        border: 1px solid #fff
+    }
+
+    .wt-multiple--container .wt-multiple--button {
+        padding: 0;
+        position: relative
+    }
+
+    .wt-multiple--container .wt-multiple--button span {
+        padding: 0 10px;
+        color: #222
+    }
+
+    .wt-multiple--container .wt-multiple--button:after {
+        content: " ";
+        min-width: 38px;
+        min-height: 38px;
+        display: block;
+        background-color: #444;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: auto 16px;
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23fff' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M0 7.33l2.829-2.83 9.175 9.339 9.167-9.339 2.829 2.83-11.996 12.17z'/%3E%3C/svg%3E")
+    }
+
+    .wt-multiple-selector--dialog {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        overflow: hidden
+    }
+
+    .wt-multiple-selector--dialog form {
+        background-color: #fff;
+        position: absolute;
+        overflow: hidden;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        border: 0
+    }
+
+    .wt-multiple-selector--dialog-topbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        background-color: #f3f3f3;
+        padding: 8px;
+        border-bottom: 1px solid #ddd
+    }
+
+    .wt-multiple-selector--dialog fieldset {
+        overflow: auto;
+        border: 0;
+        margin: 24px 16px;
+        padding: 10px 10px 20px
+    }
+
+    .wt-multiple-selector--dialog legend {
+        font-size: 20px;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        color: #444
+    }
+
+    .wt-multiple-selector--dialog ul {
+        margin: 10px 0;
+        padding: 10px 0;
+        list-style-type: none;
+        display: flex;
+        flex-wrap: wrap
+    }
+
+    .wt-multiple-selector--dialog .wt-form--list-separator {
+        border-top: 1px dashed #ccc
+    }
+
+    .wt-multiple-selector--dialog ul li {
+        padding: 5px;
+        flex: auto;
+        display: flex;
+        align-items: flex-start;
+        gap: 5px;
+        min-width: 180px;
+        max-width: 180px
+    }
+}
+
+@media all {
+    .wt-charts--estat {
+        border: 0
+    }
+
+    .wt-charts--estat .wt-charts--container {
+        padding: 0 10px
+    }
+
+    .wt-charts--estat .wt-charts--toolbar {
+        border: 0;
+        background-color: #fff
+    }
+
+    .wt-charts--estat .wt-charts--menu .wt-btn {
+        border-color: #444;
+        border-radius: 5px
+    }
+
+    .wt-charts--estat .wt-charts--menu .wt-btn:focus,.wt-charts--estat .wt-charts--menu .wt-btn[aria-expanded="true"] {
+        background-color: #fff;
+        border-color: #fff;
+        outline: 2px solid #0e47cb;
+        outline-offset: -2px
+    }
+
+    .wt-charts--estat .wt-charts--sheets select,.wt-charts--estat .wt-custom-select select,.wt-charts--estat .wt-multiple--container button {
+        border-color: #444;
+        border-radius: 5px;
+        box-shadow: inset 0 2px 4px rgb(9 49 142 / .08),inset 0 0 10px rgb(9 49 142 / .04),inset 0 4px 5px rgb(9 49 142 / .04),inset 0 -4px 4px rgb(9 49 142 / .04)
+    }
+
+    .wt-charts--estat .wt-charts--sheets:after,.wt-charts--estat .wt-custom-select:after {
+        border-radius: 0 5px 5px 0
+    }
+
+    .wt-charts--estat .wt-charts--sheets:after,.wt-charts--estat .wt-custom-select:after,.wt-charts--estat .wt-multiple--container .wt-multiple--button:after {
+        background-color: #0e47cb
+    }
+
+    .wt-charts--estat .wt-charts--sheets:hover:after,.wt-charts--estat .wt-custom-select:hover:after,.wt-charts--estat .wt-multiple--container .wt-multiple--button:hover:after {
+        opacity: .8
+    }
+
+    .wt-charts--estat .wt-charts--sheets select:focus,.wt-charts--estat .wt-charts--sheets select:active,.wt-charts--estat .wt-custom-select select:focus,.wt-charts--estat .wt-custom-select select:active,.wt-charts--estat .wt-multiple--container .wt-multiple--button:focus,.wt-charts--estat .wt-multiple--container .wt-multiple--button:active {
+        outline: none
+    }
+
+    .wt-charts--estat .wt-charts--sheets select:focus-visible,.wt-charts--estat .wt-custom-select select:focus-visible,.wt-charts--estat .wt-multiple--container .wt-multiple--button:focus-visible {
+        outline: 2px solid #0e47cb;
+        outline-offset: -2px
+    }
+
+    .wt-charts--estat .wt-multiple-selector--dialog button {
+        box-shadow: none;
+        border: 2px solid #0e47cb;
+        color: #0e47cb
+    }
+
+    .wt-charts--estat .wt-multiple-selector--dialog button:hover {
+        box-shadow: 0 2px 4px rgb(9 49 142 / .08),0 0 10px rgb(9 49 142 / .04),0 4px 5px rgb(9 49 142 / .04),0 -4px 4px rgb(9 49 142 / .04)
+    }
+
+    .wt-charts--estat .wt-multiple-selector--dialog button:focus-visible {
+        box-shadow: inset 0 0 0 4px #0e47cb;
+        outline: 2px solid #fff;
+        outline-offset: -4px
+    }
+
+    .wt-charts--estat .wt-multiple-selector--dialog-topbar {
+        border: 0;
+        background-color: #fff
+    }
+
+    .wt-charts--estat .wt-charts--tooltip {
+        border-collapse: collapse;
+        margin: 0;
+        padding: 0;
+        border: 2px solid #fff;
+        background-color: #fff
+    }
+
+    .wt-charts--estat .wt-charts--tooltip th,.wt-charts--estat .wt-charts--tooltip td {
+        border: 0;
+        border-bottom: 1px #d1d1d1 solid;
+        padding: 4px;
+        vertical-align: middle
+    }
+
+    .wt-charts--estat .wt-charts--tooltip tr:last-child td {
+        border-bottom: 0
+    }
+
+    .wt-charts--estat .wt-charts--tooltip .tooltip-header {
+        background-color: #515560;
+        color: #fff;
+        font-size: 17px;
+        text-align: left
+    }
+
+    .wt-charts--estat .wt-charts--tooltip .tooltip-text span {
+        color: #171a22;
+        font-size: 14px;
+        line-height: 14px;
+        font-weight: 400;
+        display: inline-block;
+        vertical-align: bottom
+    }
+
+    .wt-charts--estat .wt-charts--tooltip td:first-child {
+        border-right: 1px #a3a3a3 dotted
+    }
+
+    .wt-charts--estat .wt-charts--tooltip-color {
+        display: flex;
+        align-items: center;
+        gap: 4px
+    }
+
+    .wt-charts--estat .wt-charts--tooltip .wt-charts--tooltip-background {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        min-width: 16px;
+        overflow: hidden;
+        border-radius: 50%
+    }
+
+    .wt-charts--tooltip td:nth-child(2) {
+        text-align: right
+    }
+
+    .wt-charts--estatcharts-logo {
+        display: flex;
+        margin-left: auto;
+        min-height: 56px;
+        align-items: center
+    }
+
+    .wt-charts--estatcharts-logo img {
+        margin: 10px 0 10px auto
+    }
+
+    .wt-charts--estat .wt-charts--estatcharts-logo img {
+        margin-left: auto
+    }
+
+    .wt-charts--estat .wt-charts--estat-caption {
+        margin-bottom: 0
+    }
+
+    .wt-charts--estat .wt-charts--estat-caption a {
+        padding: 0;
+        margin: 0;
+        color: #044aa3
+    }
+
+    .wt-charts--estat .wt-charts--header a[href="#share"] svg path {
+        fill: #0e47cb
+    }
+}
+
