@@ -1,18 +1,23 @@
-<script src="https://code.highcharts.com/maps/highmaps.js"></script>
-<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+<script src="highcharts/highmaps.js"></script>
+<script src="highcharts/exporting.js"></script>
+<!--
+https://code.highcharts.com/maps/modules/exporting.js
+https://code.highcharts.com/maps/highmaps.js
+https://code.highcharts.com/mapdata/custom/world.topo.json
+-->
 
 <div id="container"></div>
 <script>
   (async () => {
     const topology = await fetch(
-      "https://code.highcharts.com/mapdata/custom/world.topo.json"
+      "highcharts/world.topo.json"
     ).then((response) => response.json());
 
     // Prepare demo data. The data is joined to map using value of 'hc-key'
     // property by default. See API docs for 'joinBy' for more info on linking
     // data and map.
     // All EU27 countries with the same value
-    const eu27Value = 8;
+    const eu27Value = 81;
     const data = [
       { id: "dk", value: eu27Value },
       { id: "de", value: eu27Value },
@@ -44,9 +49,9 @@
       { id: "cz", value: eu27Value },
       { id: "pt", value: eu27Value },
       // Additional countries
-      { id: "jp", value: 3 }, // Japan
-      { id: "cn", value: 6 }, // China
-      { id: "us", value: 7 }, // USA
+      { id: "jp", value: 22 }, // Japan
+      { id: "cn", value: 61 }, // China
+      { id: "us", value: 17 }, // USA
     ];
 
     // List of all EU27 country IDs for easy reference
@@ -106,7 +111,7 @@
         // projection,
 
         projection: {
-          name: "WebMercator",
+          name: "Miller",
         },
         zoom: 2,
         center: [6.5, 61],
@@ -114,6 +119,11 @@
 
       colorAxis: {
         min: 0,
+        stops: [
+          [0, "#E6A532"], // Red for all values
+          [0, "#E6A532"], // Red for all values
+          [1, "#F0CD91"], // Red for all values
+        ],
       },
 
       tooltip: {
@@ -139,7 +149,20 @@
           }
         },
       },
-
+      legend: {
+        enabled: true,
+        floating: true,
+       // align: "left",
+     //   verticalAlign: "bottom",
+        layout: "horizontal",
+      //  borderWidth: 2,
+       // backgroundColor: "lightgray",
+        transparent: true,
+        borderColor: "white",
+        itemStyle: {
+          fontSize: "0.8rem",
+        },
+      },
       series: [
         {
           // Base layer - all countries without labels
@@ -160,6 +183,7 @@
           mapData: topology,
           joinBy: ["hc-key", "id"],
           allAreas: false,
+
           name: "Countries with data",
           states: {
             hover: {

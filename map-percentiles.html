@@ -69,7 +69,8 @@
       const data = getRandomData(topology);
 
       const dataClasses = calculatePercentileDataClasses(data);
-
+//console.log(dataClasses);
+console.log(data);
       let chart;
 
       const drawMap = (projectionKey) => {
@@ -109,11 +110,10 @@
               },
             },
 
-            mapView: {
-              // projection,
+            mapView: {       
 
               projection: {
-                name: "WebMercator",
+                name: "Miller", //Miller
               },
               zoom: 2,
               center: [6.5, 61],
