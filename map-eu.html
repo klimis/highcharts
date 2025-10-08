@@ -9,9 +9,9 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
 <div id="container"></div>
 <script>
   (async () => {
-    const topology = await fetch(
-      "highcharts/world.topo.json"
-    ).then((response) => response.json());
+    const topology = await fetch("highcharts/world.topo.json").then(
+      (response) => response.json()
+    );
 
     // Prepare demo data. The data is joined to map using value of 'hc-key'
     // property by default. See API docs for 'joinBy' for more info on linking
@@ -120,43 +120,36 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
       colorAxis: {
         min: 0,
         stops: [
-          [0, "#E6A532"], // Red for all values
-          [0, "#E6A532"], // Red for all values
-          [1, "#F0CD91"], // Red for all values
+          [0, "#E6A532"], // Orange (lowest values)
+          [0.25, "#F0CD91"], // Light orange
+          [0.5, "#AAB9E1"], // Light blue
+          [0.75, "#6487C3"], // Medium blue
+          [1, "#2D50A0"], // Dark blue (highest values)
         ],
       },
 
       tooltip: {
         formatter: function () {
           // Check if it's an EU27 country
-          if (eu27Countries.includes(this.point.id)) {
-            return "<b>EU27</b><br/>Value: <b>8</b>";
-          } else if (this.point.id === "jp") {
-            return "<b>Japan</b><br/>Value: <b>3</b>";
-          } else if (this.point.id === "cn") {
-            return "<b>China</b><br/>Value: <b>6</b>";
-          } else if (this.point.id === "us") {
-            return "<b>USA</b><br/>Value: <b>7</b>";
-          } else {
-            // Fallback for any other countries
-            return (
-              "<b>" +
-              this.point.name +
-              "</b><br/>Value: <b>" +
-              this.point.value +
-              "</b>"
-            );
-          }
+
+          // Fallback for any other countries
+          return (
+            "<b>" +
+            this.point.name +
+            "</b><br/>Value: <b>" +
+            this.point.value +
+            "</b>"
+          );
         },
       },
       legend: {
         enabled: true,
         floating: true,
-       // align: "left",
-     //   verticalAlign: "bottom",
+        // align: "left",
+        //   verticalAlign: "bottom",
         layout: "horizontal",
-      //  borderWidth: 2,
-       // backgroundColor: "lightgray",
+        //  borderWidth: 2,
+        // backgroundColor: "lightgray",
         transparent: true,
         borderColor: "white",
         itemStyle: {
