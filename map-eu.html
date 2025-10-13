@@ -13,108 +13,59 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
       (response) => response.json()
     );
 
-    // Prepare demo data. The data is joined to map using value of 'hc-key'
-    // property by default. See API docs for 'joinBy' for more info on linking
-    // data and map.
-    // All EU27 countries with the same value
-    const eu27Value = 81;
-    const data = [
-      { id: "dk", value: eu27Value },
-      { id: "de", value: eu27Value },
-      { id: "fr", value: eu27Value },
-      { id: "ie", value: eu27Value },
-      { id: "hr", value: eu27Value },
-      { id: "ee", value: eu27Value },
-      { id: "cy", value: eu27Value },
-      { id: "fi", value: eu27Value },
-      { id: "gr", value: eu27Value },
-      { id: "se", value: eu27Value },
-      { id: "nl", value: eu27Value },
-      { id: "es", value: eu27Value },
-      { id: "lt", value: eu27Value },
-      { id: "it", value: eu27Value },
-      { id: "mt", value: eu27Value },
-      { id: "nc", value: eu27Value },
-      { id: "pl", value: eu27Value },
-      { id: "sk", value: eu27Value },
-      { id: "hu", value: eu27Value },
-      { id: "lu", value: eu27Value },
-      { id: "si", value: eu27Value },
-      { id: "be", value: eu27Value },
-      { id: "cnm", value: eu27Value },
-      { id: "bg", value: eu27Value },
-      { id: "ro", value: eu27Value },
-      { id: "lv", value: eu27Value },
-      { id: "at", value: eu27Value },
-      { id: "cz", value: eu27Value },
-      { id: "pt", value: eu27Value },
-      // Additional countries
-      { id: "jp", value: 22 }, // Japan
-      { id: "cn", value: 61 }, // China
-      { id: "us", value: 17 }, // USA
-    ];
+    // Fetch data from endpoint instead of hardcoded
+    // const data = await fetch("data/map-eu.json").then((response) =>
+    //   response.json()
+    // );
+    const data = await fetch(
+      "http://api.sectoral.kl/api/data/map?indicator_code=bop_fdi6_pos&sector_code=a"
+    ).then((response) => response.json());
 
-    // List of all EU27 country IDs for easy reference
-    const eu27Countries = [
-      "dk",
-      "de",
-      "fr",
-      "ie",
-      "hr",
-      "ee",
-      "cy",
-      "fi",
-      "gr",
-      "se",
-      "nl",
-      "es",
-      "lt",
-      "it",
-      "mt",
-      "nc",
-      "pl",
-      "sk",
-      "hu",
-      "lu",
-      "si",
-      "be",
-      "cnm",
-      "bg",
-      "ro",
-      "lv",
-      "at",
-      "cz",
-      "pt",
-    ];
+    // Extract EU27 country IDs from the data for easy reference
+    const eu27Countries = data
+      .filter(
+        (item) => item.id !== "jp" && item.id !== "cn" && item.id !== "us"
+      )
+      .map((item) => item.id);
 
     // Create the chart
     Highcharts.mapChart("container", {
       chart: {
         map: topology,
+        // zooming: {
+        //   type: null,
+        //   mouseWheel: {
+        //     enabled: false,
+        //   },
+        // },
       },
 
       title: {
-        text: "World Map - EU27, USA, China, and Japan",
+        text: "Normandy Index EU27, USA, China, and Japan",
       },
 
       subtitle: {
-        text: 'Source map: <a href="https://code.highcharts.com/mapdata/custom/world.topo.json">World</a>',
+        text: "The Normandy Index adopts an approach tailored by and to the action of the European Union. It defines conflict and the numerous stages between perfect peace and total war as a product of factors linked to the main threats identified by the European Union in its external action strategy. The Index blends geopolitical indicators with economic and social data.",
       },
 
       mapNavigation: {
-        enabled: true,
+        enabled: false,
         buttonOptions: {
           verticalAlign: "bottom",
         },
       },
       mapView: {
-        // projection,
-
         projection: {
-          name: "Miller",
+          name: "WebMercator",
         },
-        zoom: 2,
-        center: [6.5, 61],
+        // Dynamically set zoom and center based on data
+
+        // zoom: data.some((item) => ["jp", "cn", "us"].includes(item.id))
+        //   ? 1.5
+        //   : 4,
+        // center: data.some((item) => ["jp", "cn", "us"].includes(item.id))
+        //   ? [20, 45]
+        //   : [10, 54],
       },
 
       colorAxis: {
@@ -129,17 +80,21 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
       },
 
       tooltip: {
+        useHTML: true,
         formatter: function () {
           // Check if it's an EU27 country
-
-          // Fallback for any other countries
-          return (
-            "<b>" +
-            this.point.name +
-            "</b><br/>Value: <b>" +
-            this.point.value +
-            "</b>"
-          );
+          if (eu27Countries.includes(this.point.id)) {
+            return " <b>EU27</b><br/>value: <b>" + this.point.value + "</b>";
+          } else {
+            // For non-EU countries (Japan, China, USA)
+            return (
+              "<b>" +
+              this.point.name +
+              "</b><br/>value: <b>" +
+              this.point.value +
+              "</b>"
+            );
+          }
         },
       },
       legend: {
@@ -184,8 +139,14 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
             },
           },
           dataLabels: {
-            enabled: true,
-            format: "{point.name}",
+            enabled: false,
+            style: {
+              textOutline: "none", // Removes the contrasting outline
+            },
+            backgroundColor: null,
+            formatter: function () {
+              return this.point.name;
+            },
           },
           point: {
             events: {
