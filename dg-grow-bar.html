@@ -1,0 +1,203 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/themes/adaptive.js"></script>
+
+<figure class="highcharts-figure">
+  <div id="container"></div>
+  <p class="highcharts-description">
+    Chart showing use of rotated axis labels and data labels. This can be a way
+    to include more labels in the chart, but note that more labels can sometimes
+    make charts harder to read.
+  </p>
+</figure>
+<div id="container"></div>
+<script>
+  (async () => {
+    const data = await fetch("data/dg-grow-bar.json").then((response) =>
+      response.json()
+    );
+
+    const dotData = await fetch("data/dg-grow-bar-first.json").then(
+      (response) => response.json()
+    );
+
+    // Map data to Highcharts format: {name, y}
+    const chartData = data.map((item) => ({ name: item.id, y: item.value }));
+    const chartDotData = dotData.map((item) => ({
+      name: item.id,
+      y: item.value,
+      year: item.year,
+    }));
+
+    Highcharts.chart("container", {
+      chart: {
+        type: "column",
+        events: {
+          load: function () {
+            var chart = this;
+            var barSeries = chart.series[0];
+            var dotSeries = chart.series[1];
+
+            // Build a lookup for dots by category
+            var dotLookup = {};
+            dotSeries.data.forEach(function (dotPoint) {
+              dotLookup[dotPoint.category] = dotPoint;
+            });
+
+            // Draw lines from bar tips to corresponding dots
+            barSeries.data.forEach(function (barPoint) {
+              var cat = barPoint.category;
+              var dotPoint = dotLookup[cat];
+
+              if (dotPoint) {
+                var x = barPoint.plotX + chart.plotLeft;
+                var y1 = barPoint.plotY + chart.plotTop; // Bar tip (top of bar)
+                var y2 = dotPoint.plotY + chart.plotTop; // Dot position
+
+                chart.renderer
+                  .path(["M", x, y1, "L", x, y2])
+                  .attr({
+                    stroke: "grey",
+                    "stroke-width": 2,
+                    zIndex: 5,
+                  })
+                  .add();
+              }
+            });
+          },
+        },
+      },
+      title: {
+        text: "World's largest cities per 2021",
+      },
+      subtitle: {
+        text: 'Source: <a href="https://worldpopulationreview.com/world-cities" target="_blank">World Population Review</a>',
+      },
+      xAxis: {
+        type: "category",
+        labels: {
+          autoRotation: [-45, -90],
+          style: {
+            fontSize: "13px",
+            fontFamily: "Verdana, sans-serif",
+          },
+        },
+      },
+      yAxis: {
+        min: 0,
+        title: {
+          text: "Population (millions)",
+        },
+      },
+      legend: {
+        enabled: true,
+      },
+      tooltip: {
+        pointFormat: "Population : <b>{point.y:.1f} millions</b>",
+      },
+      series: [
+        {
+          name: "Population",
+          type: "column",
+
+          colorByPoint: false,
+          groupPadding: 0,
+          data: chartData,
+          // dataLabels: {
+          //   enabled: true,
+          //   rotation: -90,
+          //   color: "#FFFFFF",
+          //   inside: true,
+          //   verticalAlign: "top",
+          //   format: "{point.y:.1f}", // one decimal
+          //   y: 10, // 10 pixels down from the top
+          //   style: {
+          //     fontSize: "13px",
+          //     fontFamily: "Verdana, sans-serif",
+          //   },
+          // },
+        },
+        {
+          name: "First Series (Dots)",
+          type: "scatter",
+          color: "grey",
+          marker: {
+            radius: 4,
+            symbol: "circle",
+          },
+          data: chartDotData,
+          tooltip: {
+            pointFormat:
+              "Dot value: <b>{point.y:.2f}</b><br/>Year: <b>{point.year}</b>",
+          },
+          dataLabels: {
+            enabled: false,
+          },
+        },
+      ],
+    });
+  })();
+</script>
+<style>
+  * {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+      sans-serif;
+  }
+
+  #container {
+    height: 400px;
+  }
+
+  .highcharts-figure,
+  .highcharts-data-table table {
+    min-width: 310px;
+    max-width: 800px;
+    margin: 1em auto;
+  }
+
+  .highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid var(--highcharts-neutral-color-10, #e6e6e6);
+    margin: 10px auto;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: var(--highcharts-neutral-color-60, #666);
+  }
+
+  .highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+  }
+
+  .highcharts-data-table td,
+  .highcharts-data-table th,
+  .highcharts-data-table caption {
+    padding: 0.5em;
+  }
+
+  .highcharts-data-table thead tr,
+  .highcharts-data-table tbody tr:nth-child(even) {
+    background: var(--highcharts-neutral-color-3, #f7f7f7);
+  }
+
+  .highcharts-description {
+    margin: 0.3rem 10px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #141414;
+      color: #ffffff;
+    }
+  }
+</style>
