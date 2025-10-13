@@ -6,11 +6,7 @@
 
 <figure class="highcharts-figure">
   <div id="container"></div>
-  <p class="highcharts-description">
-    Chart showing use of rotated axis labels and data labels. This can be a way
-    to include more labels in the chart, but note that more labels can sometimes
-    make charts harder to read.
-  </p>
+  <p class="highcharts-description">show here highcharts-description</p>
 </figure>
 <div id="container"></div>
 <script>
@@ -32,6 +28,9 @@
     }));
 
     Highcharts.chart("container", {
+      credits: {
+        enabled: false,
+      },
       chart: {
         type: "column",
         events: {
@@ -70,10 +69,10 @@
         },
       },
       title: {
-        text: "World's largest cities per 2021",
+        text: "sectors for",
       },
       subtitle: {
-        text: 'Source: <a href="https://worldpopulationreview.com/world-cities" target="_blank">World Population Review</a>',
+        text: "Source:jrc",
       },
       xAxis: {
         type: "category",
@@ -88,7 +87,7 @@
       yAxis: {
         min: 0,
         title: {
-          text: "Population (millions)",
+          text: "",
         },
       },
       legend: {
@@ -99,35 +98,23 @@
       },
       series: [
         {
-          name: "Population",
+          name: "Sectors",
           type: "column",
 
           colorByPoint: false,
           groupPadding: 0,
           data: chartData,
-          // dataLabels: {
-          //   enabled: true,
-          //   rotation: -90,
-          //   color: "#FFFFFF",
-          //   inside: true,
-          //   verticalAlign: "top",
-          //   format: "{point.y:.1f}", // one decimal
-          //   y: 10, // 10 pixels down from the top
-          //   style: {
-          //     fontSize: "13px",
-          //     fontFamily: "Verdana, sans-serif",
-          //   },
-          // },
         },
         {
           name: "First Series (Dots)",
           type: "scatter",
-          color: "grey",
+          color: "black",
           marker: {
             radius: 4,
             symbol: "circle",
           },
           data: chartDotData,
+          showInLegend: false,
           tooltip: {
             pointFormat:
               "Dot value: <b>{point.y:.2f}</b><br/>Year: <b>{point.year}</b>",

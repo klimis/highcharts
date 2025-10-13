@@ -30,7 +30,11 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
 
     // Create the chart
     Highcharts.mapChart("container", {
+      credits: {
+          enabled: false,
+        },
       chart: {
+        
         map: topology,
         // zooming: {
         //   type: null,
