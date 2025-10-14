@@ -18,7 +18,7 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
     //   response.json()
     // );
     const data = await fetch(
-      "http://api.sectoral.kl/api/data/map?indicator_code=bop_fdi6_pos&sector_code=a"
+      "https://api.sectoral.coin-dev.eu/api/data/map?indicator_code=bop_fdi6_pos&sector_code=a"
     ).then((response) => response.json());
 
     // Extract EU27 country IDs from the data for easy reference
@@ -31,10 +31,9 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
     // Create the chart
     Highcharts.mapChart("container", {
       credits: {
-          enabled: false,
-        },
+        enabled: false,
+      },
       chart: {
-        
         map: topology,
         // zooming: {
         //   type: null,

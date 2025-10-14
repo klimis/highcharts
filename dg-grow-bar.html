@@ -11,18 +11,29 @@
 <div id="container"></div>
 <script>
   (async () => {
-    const data = await fetch("data/dg-grow-bar.json").then((response) =>
-      response.json()
-    );
+    // Get indicator_code and sector_code from URL parameters
+    //http://charts.europa.eu/dg-grow-bar.html?indicator_code=nama_10_lp_a21&sector_code=a
+    const urlParams = new URLSearchParams(window.location.search);
+    const indicator_code = urlParams.get("indicator_code") || "sbs_sc_ovw";
+    const sector_code = urlParams.get("sector_code") || "b";
 
-    const dotData = await fetch("data/dg-grow-bar-first.json").then(
-      (response) => response.json()
-    );
+    const url = `https://api.sectoral.coin-dev.eu/api/data/bar?indicator_code=${indicator_code}&sector_code=${sector_code}`;
+
+    const response = await fetch(url).then((response) => response.json());
+    const data = response.series1;
+    const dotData = response.series2;
+
+    // const dotData = await fetch("data/dg-grow-bar-first.json").then(
+    //   (response) => response.json()
+    // );
 
     // Map data to Highcharts format: {name, y}
-    const chartData = data.map((item) => ({ name: item.id, y: item.value }));
+    const chartData = data.map((item) => ({
+      name: item.sector_name,
+      y: item.value,
+    }));
     const chartDotData = dotData.map((item) => ({
-      name: item.id,
+      name: item.sector_name,
       y: item.value,
       year: item.year,
     }));
@@ -69,7 +80,7 @@
         },
       },
       title: {
-        text: "sectors for",
+        text: "Sectors for " + indicator_code + " and sector " + sector_code,
       },
       subtitle: {
         text: "Source:jrc",
@@ -117,7 +128,7 @@
           showInLegend: false,
           tooltip: {
             pointFormat:
-              "Dot value: <b>{point.y:.2f}</b><br/>Year: <b>{point.year}</b>",
+              "value: <b>{point.y:.2f}</b><br/>Year: <b>{point.year}</b>",
           },
           dataLabels: {
             enabled: false,
