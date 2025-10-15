@@ -5,24 +5,7 @@ function env() {
   } else if (document.location.origin === "https://impact.api.coin-dev.eu") {
     return "https://impact.api.coin-dev.eu";
   } else if (document.location.origin === "http://charts.europa.eu") {
-    return "https://impact.api.coin-dev.eu";
-  } else if (document.location.origin === "http://coinapi.jrc.com") {
-    return "http://coinapi.jrc.com";
-  } else if (document.location.origin === "https://demo.api.coin-dev.eu") {
-    return "https://demo.api.coin-dev.eu";
-  } else if (
-    document.location.origin ===
-    "https://coin-nginx-reverse-proxy-main-coin.apps.ocpt.jrc.cec.eu.int"
-  ) {
-    return "https://coin-nginx-reverse-proxy-main-coin.apps.ocpt.jrc.cec.eu.int";
-  } else if (document.location.origin === "https://impact.coin-dev.eu") {
-    return "https://profound-duckling-easily.ngrok-free.app";
-  } else if (document.location.origin === "https://knowsdgs.jrc.it") {
-    return "https://coin-nginx-reverse-proxy-main-coin.apps.ocpt.jrc.cec.eu.int";
-  } else if (document.location.origin === "https://testknowsdgs.dip.si") {
-    return "https://impact.api.coin-dev.eu";
-  } else if (document.location.origin === "https://know-sdgs.ddev.site") {
-    return "https://impact.api.coin-dev.eu";
+    return "http://api.sectoral.kl";
   } else {
     return "https://coin-nginx-reverse-proxy-main-coin.apps.ocpt.jrc.cec.eu.int";
   }
@@ -30,14 +13,20 @@ function env() {
 
 (async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const indexCode = urlParams.get("index_code") || "imp_sdg_07_40";
+  const indexCode = urlParams.get("indicator_code") || "bd_hg";
+  const sectorCode = urlParams.get("sector_code") || "B-S_X_O_S94";
   // Load the datasets for the main EU series
   const data = await fetch(
-    env() + "/api/v1/en/md?index_code=" + indexCode + "&unit_code=AT"
+    env() +
+      "/api/data/line?indicator_code=" +
+      indexCode +
+      "&sector_code=" +
+      sectorCode +
+      "&country_code=eu27"
   ).then((response) => response.json());
-  let indexInfo = await fetch(
-    env() + "/api/v1/en/info?index_code=" + indexCode
-  ).then((response) => response.json());
+  let indexInfo = await fetch(env() + "/api/indicators/" + indexCode).then(
+    (response) => response.json()
+  );
   indexInfo = indexInfo.data;
   console.log("Index Info:", indexInfo);
   let detailChart;
@@ -84,6 +73,7 @@ function env() {
           dataLabels: {
             enabled: true,
             formatter: function () {
+              //return Highcharts.numberFormat(this.y, 2);
               // Only show labels for first and last points
               if (
                 this.point.index === 0 ||
@@ -100,8 +90,10 @@ function env() {
               textOutline: "none",
             },
             backgroundColor: "#a24d59ff",
+            allowOverlap: true,
             borderRadius: 3,
             padding: 5,
+            zIndex: 10,
           },
         },
       },
@@ -250,27 +242,31 @@ function env() {
   createMaster();
 
   const response = await fetch(
-    env() + "/api/v1/en/country/list?index_code=" + indexCode
+    env() +
+      "/api/countries/by-indicator?indicator_code=" +
+      indexCode +
+      "&sector_code=" +
+      sectorCode
   );
   let countryData = await response.json();
-  //countryData = countryData;
-  // console.log("Country Data:", countryData);
+
   countryData = countryData.data;
   const urlMapping = {};
   countryData.forEach((country) => {
-    // console.log("Country:", country);
     urlMapping[country.code.toLowerCase()] =
       env() +
-      "/api/v1/en/md?index_code=" +
+      "/api/data/line?indicator_code=" +
       indexCode +
-      "&unit_code=" +
+      "&sector_code=" +
+      sectorCode +
+      "&country_code=" +
       country.code;
   });
 
   const colorMapping = {
-    italy: "#4C7C9A",
-    portugal: "#008000",
-    denmark: "#FF0000",
+    us: "#4C7C9A",
+    jp: "#008000",
+    eu27: "#FF0000",
   };
 
   // Listen for changes in the select menu to add the chosen country dynamically
@@ -287,7 +283,10 @@ function env() {
             );
             const seriesName =
               country.charAt(0).toUpperCase() + country.slice(1);
-            const seriesColor = colorMapping[country];
+            console.log("country" + country);
+            const seriesColor =
+              colorMapping[country] ||
+              "#" + Math.floor(Math.random() * 16777215).toString(16);
 
             // Add series to master chart
             masterChart.addSeries({
@@ -301,12 +300,19 @@ function env() {
             });
 
             // Add series to detail chart
-            detailChart.addSeries({
-              id: country,
-              name: seriesName,
-              data: fetchedData.map((point) => [point[0], point[1]]),
-              color: seriesColor,
-            });
+            detailChart.addSeries(
+              {
+                id: country,
+                name: seriesName,
+                data: fetchedData.map((point) => [point[0], point[1]]),
+                color: seriesColor,
+                dataLabels: {
+                  enabled: true,
+                  backgroundColor: seriesColor,
+                },
+              },
+              true
+            ); // redraw immediately
           } catch (error) {
             console.error("Error fetching data for", country, error);
           }
@@ -336,7 +342,13 @@ function env() {
   });
 
   // Populate the series-selector from API.
-  fetch(env() + "/api/v1/en/country/list?index_code=" + indexCode)
+  fetch(
+    env() +
+      "/api/countries/by-indicator?indicator_code=" +
+      indexCode +
+      "&sector_code=" +
+      sectorCode
+  )
     .then((response) => response.json())
     .then((countries) => {
       const selector = document.getElementById("series-selector");
