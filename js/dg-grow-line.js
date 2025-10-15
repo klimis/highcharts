@@ -1,13 +1,9 @@
 // Description: This script creates a master-detail chart for SDG emissions data.
 function env() {
-  if (document.location.origin === "http://impactapi.jrc.com") {
-    return "http://impactapi.jrc.com";
-  } else if (document.location.origin === "https://impact.api.coin-dev.eu") {
-    return "https://impact.api.coin-dev.eu";
-  } else if (document.location.origin === "http://charts.europa.eu") {
+  if (document.location.origin === "http://charts.europa.eu") {
     return "http://api.sectoral.kl";
   } else {
-    return "https://coin-nginx-reverse-proxy-main-coin.apps.ocpt.jrc.cec.eu.int";
+    return "https://api.egd.coin-dev.eu";
   }
 }
 
