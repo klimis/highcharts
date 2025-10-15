@@ -12,6 +12,14 @@ function env() {
   const indexCode = urlParams.get("indicator_code") || "bd_hg";
   const sectorCode = urlParams.get("sector_code") || "B-S_X_O_S94";
   // Load the datasets for the main EU series
+
+ const indicatorUrl = `https://api.sectoral.coin-dev.eu/api/indicators/${indexCode}`;
+
+  const responseIndicator = await fetch(indicatorUrl).then((response) =>
+    response.json()
+  );
+  const dataIndicator = responseIndicator.data;
+
   const data = await fetch(
     env() +
       "/api/data/line?indicator_code=" +
@@ -57,7 +65,7 @@ function env() {
         headerFormat:
           '<span style="font-size: 10px">{point.key:%Y}</span><br/>',
         pointFormat:
-          '<span style="color:{series.color}">\u25CF</span> <b>{series.name}</b>: {point.y:.2f} emissions<br/>',
+          '<span style="color:{series.color}">\u25CF</span> <b>{series.name}</b>: {point.y:.2f} ' + dataIndicator.unit + '<br/>',
       },
       legend: { enabled: false },
       plotOptions: {

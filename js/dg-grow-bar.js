@@ -5,9 +5,18 @@
   const indicator_code = urlParams.get("indicator_code") || "sbs_sc_ovw";
   const sector_code = urlParams.get("sector_code") || "b";
 
+  const indicatorUrl = `https://api.sectoral.coin-dev.eu/api/indicators/${indicator_code}`;
+
+  const responseIndicator = await fetch(indicatorUrl).then((response) =>
+    response.json()
+  );
+  const dataIndicator = responseIndicator.data;
+  
+
   const url = `https://api.sectoral.coin-dev.eu/api/data/bar?indicator_code=${indicator_code}&sector_code=${sector_code}`;
 
   const response = await fetch(url).then((response) => response.json());
+  const metadata = response.metadata;
   const data = response.series1;
   const dotData = response.series2;
 
@@ -68,10 +77,10 @@
       },
     },
     title: {
-      text: "Sectors for " + indicator_code + " and sector " + sector_code,
+      text: dataIndicator.name + " for  " + metadata.sector_name,
     },
     subtitle: {
-      text: "Source:jrc",
+      text: "Source:Eurostat",
     },
     xAxis: {
       type: "category",
@@ -93,7 +102,7 @@
       enabled: true,
     },
     tooltip: {
-      pointFormat: "Population : <b>{point.y:.1f} millions</b>",
+      pointFormat: dataIndicator.unit + " : <b>{point.y:.1f} millions</b>",
     },
     series: [
       {
@@ -105,7 +114,7 @@
         data: chartData,
       },
       {
-        name: "First Series (Dots)",
+        name: "First  year with data",
         type: "scatter",
         color: "black",
         marker: {
@@ -116,7 +125,8 @@
         showInLegend: false,
         tooltip: {
           pointFormat:
-            "value: <b>{point.y:.2f}</b><br/>Year: <b>{point.year}</b>",
+            dataIndicator.unit +
+            ": <b>{point.y:.2f}</b><br/>Year: <b>{point.year}</b>",
         },
         dataLabels: {
           enabled: false,

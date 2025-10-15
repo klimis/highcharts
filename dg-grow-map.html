@@ -1,4 +1,3 @@
-
 <script src="highcharts/highmaps.js"></script>
 <script src="highcharts/exporting.js"></script>
 <!--
@@ -14,12 +13,11 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
       (response) => response.json()
     );
 
-    // Fetch data from endpoint instead of hardcoded
-    // const data = await fetch("data/map-eu.json").then((response) =>
-    //   response.json()
-    // );
+    const urlParams = new URLSearchParams(window.location.search);
+    const indexCode = urlParams.get("indicator_code") || "bop_fdi6_pos";
+    const sectorCode = urlParams.get("sector_code") || "a";
     const data = await fetch(
-      "https://api.sectoral.coin-dev.eu/api/data/map?indicator_code=bop_fdi6_pos&sector_code=a"
+      `https://api.sectoral.coin-dev.eu/api/data/map?indicator_code=${indexCode}&sector_code=${sectorCode}`
     ).then((response) => response.json());
 
     // Extract EU27 country IDs from the data for easy reference
@@ -45,11 +43,11 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
       },
 
       title: {
-        text: "Normandy Index EU27, USA, China, and Japan",
+        text: "",
       },
 
       subtitle: {
-        text: "The Normandy Index adopts an approach tailored by and to the action of the European Union. It defines conflict and the numerous stages between perfect peace and total war as a product of factors linked to the main threats identified by the European Union in its external action strategy. The Index blends geopolitical indicators with economic and social data.",
+        text: "",
       },
 
       mapNavigation: {
@@ -62,14 +60,14 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
         projection: {
           name: "WebMercator",
         },
-        // Dynamically set zoom and center based on data
+        //Dynamically set zoom and center based on data
 
-        // zoom: data.some((item) => ["jp", "cn", "us"].includes(item.id))
-        //   ? 1.5
-        //   : 4,
-        // center: data.some((item) => ["jp", "cn", "us"].includes(item.id))
-        //   ? [20, 45]
-        //   : [10, 54],
+        zoom: data.some((item) => ["jp", "cn", "us"].includes(item.id))
+          ? 1.5
+          : 3,
+        center: data.some((item) => ["jp", "cn", "us"].includes(item.id))
+          ? [20, 45]
+          : [10, 54],
       },
 
       colorAxis: {
