@@ -3,7 +3,7 @@ function env() {
   if (document.location.origin === "http://charts.europa.eu") {
     return "http://api.sectoral.kl";
   } else {
-    return "https://api.egd.coin-dev.eu";
+    return "https://api.sectoral.coin-dev.eu";
   }
 }
 

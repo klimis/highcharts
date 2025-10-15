@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+       
+
+   </head>
+<body>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<figure class="highcharts-figure">
+    <div id="container"></div>
+    
+    <p class="highcharts-description">        
+    </p>
+</figure>
+
+
+
+<script type="application/javascript">
+     
+charteu = {
+  "service": "chart",
+  "version": "2.0",
+  "data": {
+   "chart":{
+         "type":"bar"
+      },
+      "title":{
+         "text":"Progress towards the targets -- high",
+         "align":"left"
+      },
+      "xAxis":{
+         "categories":[
+            "Climate ambition",
+            "Clean, affordable and secure energy"
+         ]
+      },
+      "yAxis":{
+         "min":0,
+         "title":{
+            "text":""
+         }
+      },
+      "legend":{
+         "reversed":true
+      },
+      "plotOptions":{
+         "series":{
+            "stacking":"normal",
+            "dataLabels":{
+               "enabled":true
+            }
+         }
+      },
+      "series":[
+         {
+            "name":"On track",
+            "data":[
+               74,
+               27               
+            ]
+         },
+         {
+            "name":"Acceleration needed",
+            "data":[
+               12,
+               32              
+            ]
+         },
+         {
+            "name":"Stagnant or reverse trend",
+            "data":[
+               34,
+               11            
+            ]
+         },
+         {
+            "name":"No data",
+            "data":[
+               33,
+               22               
+            ]
+         }
+      ]
+   }};
+
+   console.log(charteu);
+
+Highcharts.chart('container', charteu.data);  
+</script>
+
+</body>
+</html>
+
