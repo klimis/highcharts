@@ -11,7 +11,6 @@
     response.json()
   );
   const dataIndicator = responseIndicator.data;
-  
 
   const url = `https://api.sectoral.coin-dev.eu/api/data/bar?indicator_code=${indicator_code}&sector_code=${sector_code}`;
 
@@ -80,7 +79,7 @@
       text: dataIndicator.name + " for  " + metadata.sector_name,
     },
     subtitle: {
-      text: "Source:Eurostat",
+      text: dataIndicator.description,
     },
     xAxis: {
       type: "category",
@@ -106,7 +105,7 @@
     },
     series: [
       {
-        name: "Sectors",
+        name: metadata.sector_name,
         type: "column",
 
         colorByPoint: false,

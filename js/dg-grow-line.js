@@ -13,12 +13,35 @@ function env() {
   const sectorCode = urlParams.get("sector_code") || "B-S_X_O_S94";
   // Load the datasets for the main EU series
 
- const indicatorUrl = `https://api.sectoral.coin-dev.eu/api/indicators/${indexCode}`;
+  const indicatorUrl = `https://api.sectoral.coin-dev.eu/api/indicators/${indexCode}`;
 
   const responseIndicator = await fetch(indicatorUrl).then((response) =>
     response.json()
   );
   const dataIndicator = responseIndicator.data;
+
+  const response = await fetch(
+    env() +
+      "/api/countries/by-indicator?indicator_code=" +
+      indexCode +
+      "&sector_code=" +
+      sectorCode
+  );
+  let countryData = await response.json();
+
+  countryData = countryData.data;
+  const urlMapping = {};
+  countryData.forEach((country) => {
+    urlMapping[country.code.toLowerCase()] =
+      env() +
+      "/api/data/line?indicator_code=" +
+      indexCode +
+      "&sector_code=" +
+      sectorCode +
+      "&country_code=" +
+      country.code;
+  });
+  console.log(countryData);
 
   const data = await fetch(
     env() +
@@ -56,8 +79,8 @@ function env() {
         style: { position: "absolute" },
       },
       credits: { enabled: false },
-      title: { text: indexInfo.name, align: "left" },
-      subtitle: { text: "desc", align: "left" },
+      title: { text: indexInfo.name, align: "center" },
+      subtitle: { text: indexInfo.description, align: "center" },
       xAxis: { type: "datetime" },
       yAxis: { title: { text: null }, maxZoom: 0.1 },
       tooltip: {
@@ -65,7 +88,9 @@ function env() {
         headerFormat:
           '<span style="font-size: 10px">{point.key:%Y}</span><br/>',
         pointFormat:
-          '<span style="color:{series.color}">\u25CF</span> <b>{series.name}</b>: {point.y:.2f} ' + dataIndicator.unit + '<br/>',
+          '<span style="color:{series.color}">\u25CF</span> <b>{series.name}</b>: {point.y:.2f} ' +
+          dataIndicator.unit +
+          "<br/>",
       },
       legend: { enabled: false },
       plotOptions: {
@@ -74,16 +99,31 @@ function env() {
             enabled: false,
             states: { hover: { enabled: true, radius: 3 } },
           },
+          label: {
+            enabled: true,
+            connectorAllowed: false,
+            style: {
+              fontWeight: "bold",
+              fontSize: "13px",
+            },
+          },
           dataLabels: {
             enabled: true,
             formatter: function () {
-              //return Highcharts.numberFormat(this.y, 2);
-              // Only show labels for first and last points
+              let countryName = "";
+              countryData.forEach((country) => {
+                if (
+                  country.code.toLowerCase() === this.series.name.toLowerCase()
+                ) {
+                  countryName = country.name;
+                }
+              });
+
               if (
                 this.point.index === 0 ||
                 this.point.index === this.series.data.length - 1
               ) {
-                return Highcharts.numberFormat(this.y, 2);
+                return countryName + ": " + Highcharts.numberFormat(this.y, 2);
               }
               return null;
             },
@@ -244,28 +284,6 @@ function env() {
 
   // Create the master chart; its callback creates the detail chart
   createMaster();
-
-  const response = await fetch(
-    env() +
-      "/api/countries/by-indicator?indicator_code=" +
-      indexCode +
-      "&sector_code=" +
-      sectorCode
-  );
-  let countryData = await response.json();
-
-  countryData = countryData.data;
-  const urlMapping = {};
-  countryData.forEach((country) => {
-    urlMapping[country.code.toLowerCase()] =
-      env() +
-      "/api/data/line?indicator_code=" +
-      indexCode +
-      "&sector_code=" +
-      sectorCode +
-      "&country_code=" +
-      country.code;
-  });
 
   const colorMapping = {
     us: "#4C7C9A",

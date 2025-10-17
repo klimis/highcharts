@@ -16,6 +16,14 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
     const urlParams = new URLSearchParams(window.location.search);
     const indexCode = urlParams.get("indicator_code") || "bop_fdi6_pos";
     const sectorCode = urlParams.get("sector_code") || "a";
+
+    const indicatorUrl = `https://api.sectoral.coin-dev.eu/api/indicators/${indexCode}`;
+
+    const responseIndicator = await fetch(indicatorUrl).then((response) =>
+      response.json()
+    );
+    const dataIndicator = responseIndicator.data;
+
     const data = await fetch(
       `https://api.sectoral.coin-dev.eu/api/data/map?indicator_code=${indexCode}&sector_code=${sectorCode}`
     ).then((response) => response.json());
@@ -43,11 +51,11 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
       },
 
       title: {
-        text: "",
+        text: dataIndicator.name,
       },
 
       subtitle: {
-        text: "",
+        text: dataIndicator.description,
       },
 
       mapNavigation: {
@@ -86,7 +94,13 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
         formatter: function () {
           // Check if it's an EU27 country
           if (eu27Countries.includes(this.point.id)) {
-            return " <b>EU27</b><br/>value: <b>" + this.point.value + "</b>";
+            return (
+              " <b>EU27</b><br/>value: <b>" +
+              this.point.value +
+              " " +
+              dataIndicator.unit +
+              "</b>"
+            );
           } else {
             // For non-EU countries (Japan, China, USA)
             return (
