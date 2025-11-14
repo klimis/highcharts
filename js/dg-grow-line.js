@@ -13,7 +13,7 @@ function env() {
   const sectorCode = urlParams.get("sector_code") || "B-S_X_O_S94";
   // Load the datasets for the main EU series
 
-  const indicatorUrl = `https://api.sectoral.coin-dev.eu/api/indicators/${indexCode}`;
+  const indicatorUrl = env() + `/api/indicators/${indexCode}`;
 
   const responseIndicator = await fetch(indicatorUrl).then((response) =>
     response.json()

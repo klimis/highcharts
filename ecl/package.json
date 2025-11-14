@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@ecl/preset-ec": "^5.0.0-alpha.19"
+  }
+}
