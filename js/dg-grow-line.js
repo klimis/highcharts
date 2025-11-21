@@ -88,7 +88,7 @@ function env() {
         headerFormat:
           '<span style="font-size: 10px">{point.key:%Y}</span><br/>',
         pointFormat:
-          '<span style="color:{series.color}">\u25CF</span> <b>{series.name}</b>: {point.y:.2f} ' +
+          '<span style="color:{series.color}">\u25CF</span> <b>{series.name}</b>: {point.y} ' +
           dataIndicator.unit +
           "<br/>",
       },
@@ -123,7 +123,7 @@ function env() {
                 this.point.index === 0 ||
                 this.point.index === this.series.data.length - 1
               ) {
-                return countryName + ": " + Highcharts.numberFormat(this.y, 2);
+                return countryName + ": " + this.y;
               }
               return null;
             },
