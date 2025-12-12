@@ -9,9 +9,53 @@ https://code.highcharts.com/mapdata/custom/world.topo.json
 <div id="container"></div>
 <script>
   (async () => {
-    const topology = await fetch("highcharts/world.topo.json").then(
+    let topoUrl = "highcharts/world.topo.json";
+
+    const useEuTopology = true; // Set to true to use EU topology
+
+    console.log("useEuTopology", useEuTopology);
+
+    if (useEuTopology) {
+      topoUrl = "https://gisco-services.ec.europa.eu/distribution/v2/countries/topojson/CNTR_RG_60M_2024_4326.json";
+    }
+
+    const topology = await fetch(topoUrl).then(
       (response) => response.json()
     );
+
+    // Process EU topology to add hc-key property
+    if (useEuTopology && topology.objects.CNTR_RG_60M_2024_4326) {
+      // Rename the object key to 'default' for Highcharts compatibility
+      topology.objects.default = topology.objects.CNTR_RG_60M_2024_4326;
+      delete topology.objects.CNTR_RG_60M_2024_4326;
+
+      // Add hc-key property based on ISO codes
+      topology.objects.default.geometries.forEach(geo => {
+        if (geo.properties) {
+          // Map ISO3_CODE to lowercase 2-letter code for compatibility
+          const iso2Map = {
+            'AUT': 'at', 'BEL': 'be', 'BGR': 'bg', 'HRV': 'hr', 'CYP': 'cy',
+            'CZE': 'cz', 'DNK': 'dk', 'EST': 'ee', 'FIN': 'fi', 'FRA': 'fr',
+            'DEU': 'de', 'GRC': 'el', 'HUN': 'hu', 'IRL': 'ie', 'ITA': 'it',
+            'LVA': 'lv', 'LTU': 'lt', 'LUX': 'lu', 'MLT': 'mt', 'NLD': 'nl',
+            'POL': 'pl', 'PRT': 'pt', 'ROU': 'ro', 'SVK': 'sk', 'SVN': 'si',
+            'ESP': 'es', 'SWE': 'se', 'USA': 'us', 'JPN': 'jp', 'CHN': 'cn',
+            'GBR': 'gb', 'NOR': 'no', 'CHE': 'ch', 'ISL': 'is', 'RUS': 'ru',
+            'TUR': 'tr', 'UKR': 'ua', 'BLR': 'by', 'MDA': 'md', 'SRB': 'rs',
+            'BIH': 'ba', 'MKD': 'mk', 'ALB': 'al', 'MNE': 'me', 'XKX': 'xk'
+          };
+
+          const iso3 = geo.properties.ISO3_CODE;
+          const iso2 = iso2Map[iso3] || geo.properties.CNTR_ID?.toLowerCase();
+
+          geo.properties['hc-key'] = iso2;
+          geo.properties['iso-a2'] = iso2;
+          geo.properties['name'] = geo.properties.NAME_ENGL || geo.properties.CNTR_NAME;
+        }
+      });
+    }
+
+    console.log("topology", topology);
 
     const urlParams = new URLSearchParams(window.location.search);
     const indexCode = urlParams.get("indicator_code") || "bop_fdi6_pos";
