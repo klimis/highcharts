@@ -4,6 +4,7 @@
 <script src="https://code.highcharts.com/themes/adaptive.js"></script>
 <div class="country-selector">
     <label for="country-select">Select countries to highlight:</label>
+    <input type="text" id="country-search" placeholder="Search countries..." />
     <select id="country-select" multiple size="6">
     </select>
     <small class="hint">Hold Ctrl/Cmd to select multiple countries</small>
@@ -49,7 +50,24 @@
                 const option = document.createElement('option');
                 option.value = country.code;
                 option.textContent = country.name;
+                option.dataset.name = country.name.toLowerCase();
                 countrySelect.appendChild(option);
+            });
+
+            // Add search functionality
+            const searchInput = document.getElementById('country-search');
+            searchInput.addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase();
+                const options = countrySelect.options;
+
+                for (let i = 0; i < options.length; i++) {
+                    const optionText = options[i].dataset.name;
+                    if (optionText.includes(searchTerm)) {
+                        options[i].style.display = '';
+                    } else {
+                        options[i].style.display = 'none';
+                    }
+                }
             });
 
             // Set all series to grey with semi-transparency
@@ -234,11 +252,13 @@
     }
 
     .country-selector {
-        margin-bottom: 24px;
+        margin: 0 auto 24px auto;
         padding: 16px;
         background: rgba(255, 255, 255, 0.05);
         border-radius: 8px;
         border: 1px solid rgba(128, 128, 128, 0.2);
+        max-width: 300px;
+        text-align: center;
     }
 
     .country-selector label {
@@ -246,6 +266,29 @@
         font-weight: 600;
         margin-bottom: 8px;
         font-size: 14px;
+    }
+
+    #country-search {
+        width: 100%;
+        max-width: 250px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        border: 1px solid rgba(128, 128, 128, 0.3);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.03);
+        color: inherit;
+        font-family: inherit;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
+
+    #country-search:focus {
+        outline: 2px solid rgba(128, 128, 128, 0.5);
+        outline-offset: 2px;
+    }
+
+    #country-search::placeholder {
+        opacity: 0.6;
     }
 
     #country-select {
