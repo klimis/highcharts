@@ -2,8 +2,14 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 <script src="https://code.highcharts.com/themes/adaptive.js"></script>
-
+<div class="country-selector">
+    <label for="country-select">Select countries to highlight:</label>
+    <select id="country-select" multiple size="6">
+    </select>
+    <small class="hint">Hold Ctrl/Cmd to select multiple countries</small>
+</div>
 <figure class="highcharts-figure">
+
     <div id="container"></div>
     <p class="highcharts-description">
         Scatter plots with jittering are used when individual points are so
@@ -26,6 +32,26 @@
             const promises = dataFiles.map(file => fetch(file).then(res => res.json()));
             const countriesData = await Promise.all(promises);
 
+            // Get unique countries for the select list
+            const uniqueCountries = [];
+            const countryMap = new Map();
+            countriesData[0].forEach(country => {
+                if (!countryMap.has(country.code)) {
+                    countryMap.set(country.code, country.name);
+                    uniqueCountries.push({ code: country.code, name: country.name });
+                }
+            });
+            uniqueCountries.sort((a, b) => a.name.localeCompare(b.name));
+
+            // Populate country select
+            const countrySelect = document.getElementById('country-select');
+            uniqueCountries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.code;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            });
+
             // Set all series to grey with semi-transparency
             const colors = ['rgba(128, 128, 128, 0.5)'];
 
@@ -42,10 +68,15 @@
 
             Highcharts.chart('container', {
                 chart: {
-                    type: 'scatter'
+                    type: 'scatter',
+                    height: 600
                 },
 
                 colors,
+
+                credits: {
+                    enabled: false
+                },
 
                 title: {
                     text: 'Policy areas'
@@ -124,6 +155,44 @@
 
                 series
             });
+
+            // Add event listener for country selection
+            const chart = Highcharts.charts[Highcharts.charts.length - 1];
+            const highlightColors = [
+                '#FF0000', '#0066FF', '#00CC00', '#FF9900', '#9933FF',
+                '#FF1493', '#00CED1', '#FFD700', '#FF4500', '#32CD32',
+                '#BA55D3', '#FF6347', '#4169E1', '#FF69B4', '#00FA9A'
+            ];
+
+            countrySelect.addEventListener('change', function () {
+                const selectedCodes = Array.from(this.selectedOptions).map(opt => opt.value);
+
+                // Reset all points to default style
+                chart.series.forEach(series => {
+                    series.points.forEach(point => {
+                        point.graphic.attr({
+                            'stroke-width': 0,
+                            'fill-opacity': 0.5
+                        });
+                    });
+                });
+
+                // Highlight selected countries with different colors
+                if (selectedCodes.length > 0) {
+                    chart.series.forEach(series => {
+                        series.points.forEach(point => {
+                            const colorIndex = selectedCodes.indexOf(point.code);
+                            if (colorIndex !== -1) {
+                                point.graphic.attr({
+                                    'stroke': highlightColors[colorIndex % highlightColors.length],
+                                    'stroke-width': 3,
+                                    'fill-opacity': 1
+                                });
+                            }
+                        });
+                    });
+                }
+            });
         } catch (error) {
             console.error('Error loading countries data:', error);
         }
@@ -150,17 +219,68 @@
     }
 
     #container {
-        max-width: 800px;
+        max-width: 1200px;
         margin: auto;
     }
 
     .highcharts-figure {
         min-width: 360px;
-        max-width: 800px;
+        max-width: 1200px;
         margin: 1em auto;
     }
 
     .highcharts-description {
         margin: 0.3rem 10px;
+    }
+
+    .country-selector {
+        margin-bottom: 24px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(128, 128, 128, 0.2);
+    }
+
+    .country-selector label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    #country-select {
+        width: 100%;
+        max-width: 250px;
+        padding: 8px;
+        border: 1px solid rgba(128, 128, 128, 0.3);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.03);
+        color: inherit;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    #country-select option {
+        padding: 6px 8px;
+        border-radius: 2px;
+    }
+
+    #country-select option:checked {
+        background: rgba(255, 0, 0, 0.3) !important;
+        color: inherit;
+    }
+
+    #country-select:focus {
+        outline: 2px solid rgba(128, 128, 128, 0.5);
+        outline-offset: 2px;
+    }
+
+    .country-selector .hint {
+        display: block;
+        margin-top: 8px;
+        font-size: 12px;
+        opacity: 0.7;
+        font-style: italic;
     }
 </style>
