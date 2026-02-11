@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eurostat-map.js</title>
+    <script src="https://unpkg.com/eurostat-map"></script>
+    <script src="https://d3js.org/d3-color.v2.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v2.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v2.min.js"></script>
+
+</head>
+
+<body>
+    <svg id="map"></svg>
+
+    <script>
+
+        // English country name mapping
+        const countryNames = {
+            'AT': 'Austria', 'BE': 'Belgium', 'BG': 'Bulgaria', 'HR': 'Croatia',
+            'CY': 'Cyprus', 'CZ': 'Czech Republic', 'DK': 'Denmark', 'EE': 'Estonia',
+            'FI': 'Finland', 'FR': 'France', 'DE': 'Germany', 'EL': 'Greece',
+            'HU': 'Hungary', 'IE': 'Ireland', 'IT': 'Italy', 'LV': 'Latvia',
+            'LT': 'Lithuania', 'LU': 'Luxembourg', 'MT': 'Malta', 'NL': 'Netherlands',
+            'PL': 'Poland', 'PT': 'Portugal', 'RO': 'Romania', 'SK': 'Slovakia',
+            'SI': 'Slovenia', 'ES': 'Spain', 'SE': 'Sweden'
+        };
+
+        const map = eurostatmap
+            .map('choropleth')
+            .title('Economic Fairness across the EU')
+            //.geo('efta')
+            .stamp({
+                x: 230,
+                y: 140,
+                size: 60,
+                text: 'Hello~world¶Custom Stamp',
+                stampColor: '#3792B6',
+                textColor: '#3792B6',
+                strokeWidth: 2,
+            })
+            .numberOfClasses(6)
+            .colors(['#f9f2e3', '#f9f2e3', '#f8b99c', '#f6b294', '#d0e4ef', '#9cc7e0'])
+            ;
+
+        // Load data from JSON file
+        fetch('data/eurostat/data.json')
+            .then(response => response.json())
+            .then(data => {
+                // Set custom data from loaded JSON
+                map.statData().setData(data);
+
+                map.tooltip({
+                    id: 'em-tooltip',
+                    containerId: 'map',
+                    transitionDuration: 200,
+                    xOffset: 130,
+                    yOffset: 20,
+                    textFunction: ((region, map) => {
+                        const value = map.statData().getValue(region.properties.id);
+                        if (value === undefined || value === null) {
+                            return null; // Don't show tooltip when no data
+                        }
+                        const countryCode = region.properties.id;
+                        const countryName = countryNames[countryCode] || region.properties.na || countryCode;
+                        return `
+                            <div class="tooltip-header">${countryName}</div>
+                            <div class="tooltip-body">Value: ${value}</div>
+                        `;
+                    }),
+                    showFlags: 'long'
+                });
+
+                map.legend({
+                    x: 0,
+                    y: 80,
+                    title: 'Aggregate change',
+                    orientation: 'horizontal'
+                })
+                    //.colorFun(d3.sunset)
+                    .nutsLevel(0)
+                    // .colorSchemeName('Blues') //schemeBlues - schemeReds - schemeGreens - schemeOranges - schemePurples
+                    // .colorFun(d3.interpolateRdBu)
+                    .colorSchemeType('discrete') //discrete - continuous
+
+                    .subtitle('Index measures and compares the economic resilience')
+                    .build();
+            })
+            .catch(error => console.error('Error loading data :', error));
+
+    </script>
+    <style>
+        /* Country borders styling - try multiple selectors */
+        #map path {
+            stroke: white !important;
+            stroke-width: 1px !important;
+        }
+
+        #em-tooltip {
+            padding: 0 !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25) !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            overflow: hidden !important;
+            border: none !important;
+            /* border: 2px solid white !important; */
+
+            background: transparent !important;
+        }
+
+        #em-tooltip .tooltip-header {
+            background: #3498db !important;
+            color: white !important;
+            padding: 10px 14px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.3px !important;
+        }
+
+        #em-tooltip .tooltip-body {
+            background: #2c3e50 !important;
+            color: #ecf0f1 !important;
+            padding: 10px 14px !important;
+            font-size: 13px !important;
+        }
+    </style>
+</body>
+
+</html>
